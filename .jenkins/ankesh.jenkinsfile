@@ -6,14 +6,14 @@ pipeline{
                 kind: Pod
                 spec:
                   containers:
-                    - name: aws
+                  - name: aws
                     image: amazon/aws-cli
                     command:
                     - sh
                     tty: true
                     volumeMounts:
-                      - name: shared-data
-                        mountPath: /mnt/shared-data
+                    - name: shared-data
+                      mountPath: /mnt/shared-data
                   
                   volumes:
                     - name: dind-storage
