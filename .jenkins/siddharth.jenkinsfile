@@ -6,14 +6,15 @@ pipeline{
                 kind: Pod
                 spec: 
                   containers:
-                  - name: aws
-                    image: amazon/aws-cli
-                    command:
-                    - sh
-                    tty: true
-                    volumeMounts:
-                      - name: shared-data
-                        mouthPath: /mnt/shared-data
+                    - name: aws
+                      image: amazon/aws-cli
+                      command:
+                      - sh
+                      tty: true
+                      volumeMounts:
+                        - name: shared-data
+                          mountPath: /mnt/shared-data
+
                   volumes:
                     - name: dind-storage
                       emptyDir: {}
@@ -22,7 +23,7 @@ pipeline{
             '''
         }
     }
-    stages{
+    stages {
         stage("hello world"){
             steps {
                 container('aws'){
