@@ -19,7 +19,7 @@ pipeline{
                   - name: dind-storage
                     emptyDir: {}
                   - name: shared-data
-                    emptyDir {}
+                    emptyDir: {}
             '''
         }
     }
