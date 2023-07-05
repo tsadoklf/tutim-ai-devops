@@ -4,7 +4,7 @@ pipeleine{
         stage("Hello World"){
             steps{
                 sh '''
-                echo"hello my name is shruti kapoor"
+                echo "hello my name is shruti kapoor"
                 '''
                 
             }
