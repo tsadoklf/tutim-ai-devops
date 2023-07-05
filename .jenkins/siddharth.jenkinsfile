@@ -7,7 +7,7 @@ pipeline{
                 spec: 
                   containers:
                   - name: aws
-                    image: amazon/aws-cl;
+                    image: amazon/aws-cli
                     command:
                     - sh
                     tty: true
