@@ -1,3 +1,13 @@
 pipeleine{
-    
+    agent any
+    stages{
+        stage("Hello World"){
+            steps{
+                sh '''
+                echo"hello my name is shruti kapoor"
+                '''
+                
+            }
+        }
+    }
 }
