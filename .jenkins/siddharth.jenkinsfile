@@ -1,6 +1,6 @@
 pipeline{
-    agent{
-        kubernetes{
+    agent {
+        kubernetes {
             yaml '''
                 apiVersion: v1
                 kind: Pod
@@ -9,7 +9,7 @@ pipeline{
                   - name: aws
                     image: amazon/aws-cli
                     command:
-                      - sh
+                    - sh
                     tty: true
                     volumeMounts:
                       - name: shared-data
@@ -22,9 +22,8 @@ pipeline{
             '''
         }
     }
-
     stages{
-        stage("Hello World"){
+        stage("hello world"){
             steps {
                 container('aws'){
                   sh '''
