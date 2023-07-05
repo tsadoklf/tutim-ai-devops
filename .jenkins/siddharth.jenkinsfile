@@ -14,7 +14,6 @@ pipeline{
                     volumeMounts:
                     - name: shared-data
                       mouthPath: /mnt/shared-data
-
                   volumes:
                   - name: dind-storage
                     emptyDir: {}
