@@ -27,7 +27,7 @@ pipeline{
         stages{
         stage("Hello world"){
             steps{
-                containers ('aws'){
+                container ('aws'){
                 sh'''
                 echo "Hello muy name is Ankesh"
                 '''
