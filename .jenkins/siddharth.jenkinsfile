@@ -9,23 +9,23 @@ pipeline{
                   - name: aws
                     image: amazon/aws-cli
                     command:
-                    - sh
+                      - sh
                     tty: true
                     volumeMounts:
-                    - name: shared-data
-                      mouthPath: /mnt/shared-data
+                      - name: shared-data
+                        mouthPath: /mnt/shared-data
                   volumes:
-                  - name: dind-storage
-                    emptyDir: {}
-                  - name: shared-data
-                    emptyDir: {}
+                    - name: dind-storage
+                      emptyDir: {}
+                    - name: shared-data
+                      emptyDir: {}
             '''
         }
     }
 
     stages{
         stage("Hello World"){
-            steps{
+            steps {
                 container('aws'){
                   sh '''
                     echo "Hello my name is siddharth nautiyal."
