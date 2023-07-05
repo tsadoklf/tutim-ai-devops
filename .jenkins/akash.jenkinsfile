@@ -1,3 +1,12 @@
 pipeline{ 
-    
+    agent any 
+    stage{
+    stages("hello world"){
+        steps{
+            sh '''
+            echo "hello my name is Akash"
+            '''
+        }
+    }
+}
 }
