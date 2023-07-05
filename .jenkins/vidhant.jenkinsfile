@@ -1,0 +1,17 @@
+pipeline {
+    agent any
+
+    stages {
+        stage("Level 1") {
+            steps {
+
+                sh'''
+                
+                echo "Hell i am vidhant"
+
+                '''
+            }
+        }
+    }
+
+}
