@@ -8,7 +8,7 @@ pipeline{
                   containers:
                     - name: aws
                       image: amazon/aws-cli
-                      command: ["sh"]
+                      command: 
                       - sh 
                       tty: true
                       volumeMounts:
@@ -29,7 +29,7 @@ pipeline{
     stages {
         stage("hello world"){
             steps {
-                container('aws'){
+                container('aws') {
                     sh '''
                         echo "hello my name is Harshita"
                     '''    
