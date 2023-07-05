@@ -1,12 +1,40 @@
 pipeline{
-    agent any
+    agent{
+        kubernetes{
+            yaml '''
+                apiversion: v1
+                kind: Pod
+                spec: 
+                  containers:
+                    - name: aws
+                    image: amazon/aws-cl;
+                    command:
+                    -sh
+                    tty: true
+                    volumeMounts:
+                      -name: shared-data
+                      mouthPath:  /mnt/shared-data
+
+                  volumes:
+                    -name: dind-storage
+                     emptyDir: {}
+                    -name shared-data
+                     emptyDir {}
+            '''
+        }
+    }
+
     stages{
         stage("Hello World"){
             steps{
-                sh'''
-                echo "Hello my name is Siddharth Nautiyal"
+                container('aws'){
+                sh '''
+                echo "Hello my name is siddharth nautiyal."
                 '''
+                }
             }
         }
+
     }
+    
 }
