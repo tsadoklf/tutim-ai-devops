@@ -1,4 +1,14 @@
 pipeline{
+    agent any 
+    Stages{
+        stage("Hello World"){
+            Steps{
+                sh'''
+                    echo "hello my name is harshita"
+                '''
+            }
+        }
+    }
 
     
 }
