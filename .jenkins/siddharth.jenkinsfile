@@ -18,7 +18,7 @@ pipeline{
                   volumes:
                   - name: dind-storage
                     emptyDir: {}
-                  - name shared-data
+                  - name: shared-data
                     emptyDir {}
             '''
         }
