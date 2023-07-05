@@ -1,11 +1,39 @@
+
+
+
 pipeline{ 
-    agent any 
-    stages{
-    stage("hello world"){
-        steps {
-            sh '''
-                echo "hello my name is TLF"
-            '''
+    agent {
+        kubernetes {
+            yaml '''
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                    - name: aws
+                      image: amazon/aws-cli
+                      command: 
+                      - sh
+                      tty: true
+                      volumeMounts:     
+                        - name: shared-data
+                          mountPath: /mnt/shared-data
+
+                  volumes:  
+                    - name: dind-storage      
+                      emptyDir: {}
+                    - name: shared-data
+                      emptyDir: {}
+            '''    
+        }
+    }
+    stages {
+        stage("hello world"){
+            steps {
+                container('aws') {
+                    sh '''
+                        echo "hello world"
+                    '''
+                }                
             }
         }
     }
