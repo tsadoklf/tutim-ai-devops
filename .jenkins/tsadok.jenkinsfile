@@ -245,15 +245,13 @@ pipeline {
     }
 
     stage('Terraform: Create Infrastructure') {
-      when {
-        branch 'main-1'
-      }
+    //   when {
+    //     branch 'main-1'
+    //   }
       steps {
         container('terraform') {
           dir(path: "terraform") {
             sh '''
-
-              echo AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
 
               echo ""
               terraform version
