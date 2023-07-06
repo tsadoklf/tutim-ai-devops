@@ -148,7 +148,7 @@ pipeline {
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
 
     // IMAGE_TAG="tsadok-${BUILD_NUMBER}"
-    IMAGE_TAG="tsadok"
+    IMAGE_TAG = "tsadok"
   }
   stages {
     // git branch: 'main', changelog: false, poll: false, url: 'https://mohdsabir-cloudside@bitbucket.org/mohdsabir-cloudside/java-app.git'
@@ -173,31 +173,31 @@ pipeline {
       }
     }
 
-    stage('Get AWS update-kubeconfig') {
-      steps {
-        container('aws') {
-          sh '''
-            CLUSTER_NAME="k8s-batch3"
-            REGION="us-west-2"
+    // stage('Get AWS update-kubeconfig') {
+    //   steps {
+    //     container('aws') {
+    //       sh '''
+    //         CLUSTER_NAME="k8s-batch3"
+    //         REGION="us-west-2"
 
-            aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+    //         aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
 
-            cat /root/.kube/config
-          '''
-        }
-      }
-    }
+    //         cat /root/.kube/config
+    //       '''
+    //     }
+    //   }
+    // }
 
-    stage('Connect to EKS Cluster') {
-      steps {
-        container('kubectl') {
-          sh '''
-            ls -l
-            cat /root/.kube/config
-          '''
-        }
-      }
-    }
+    // stage('Connect to EKS Cluster') {
+    //   steps {
+    //     container('kubectl') {
+    //       sh '''
+    //         ls -l
+    //         cat /root/.kube/config
+    //       '''
+    //     }
+    //   }
+    // }
 
     stage('Check Docker Daemon Is Up') {
       steps {
