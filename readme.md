@@ -1,5 +1,8 @@
 # DEVOPS BOOTCAMP BATCH-3
 ## PROJECT - OBJECT DETECTION MODEL
+
+<img src="/object_detection_service.png">
+
 We have a Object Detection Applications that follows a microservice architecture, consisting of four separate containers that communicate using either <b>DOCKER COMPOSE</b> or <b>KUBERNETES</b>.
 
 ### APPLICATION COMPONENTS
