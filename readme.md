@@ -5,7 +5,7 @@
 <img src="/object_detection_service.png">
 <br>
 
-We have a Object Detection Applications that follows a microservice architecture, consisting of four separate containers that communicate using either <b>DOCKER COMPOSE</b> or <b>KUBERNETES</b>.
+We have a Object Detection Application that follows a microservice architecture, consisting of four separate containers that communicate using either <b>DOCKER COMPOSE</b> or <b>KUBERNETES</b>.
 
 ### APPLICATION COMPONENTS
 Following are the different components of our application:
