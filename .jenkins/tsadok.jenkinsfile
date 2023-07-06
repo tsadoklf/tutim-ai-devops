@@ -297,54 +297,43 @@ pipeline {
       }
       steps{
         container('terraform') {
-                 sh '''
-
-                  cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
-
-                '''
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
-                // sh '''
+                sh '''
 
-                //   cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
+                  EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE)  
+                  EC2_ADMIN_USERNAME="ubuntu"
+                  EC2_ADDRESS="${EC2_ADMIN_USERNAME}@${EC2_INSTANCE_PUBLIC_IP}"
 
-                // '''
-                // sh '''
+                  ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
+                    mkdir -p /home/ubuntu/test
+                    ls -l
+                    """
 
+                  scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ${EC2_ADDRESS}:/home/ubuntu/test/docker-compose.yaml
 
-                //   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ubuntu@3.23.150.145 """
-                //     mkdir -p /home/ubuntu/test
-                //     ls -l
-                //     """
+                  ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
 
-                //   scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ubuntu@3.23.150.145:/home/ubuntu/test/docker-compose.yaml
-
-                //   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ubuntu@3.23.150.145 """
-
-                //     if docker version &> /dev/null; then
+                    if docker version &> /dev/null; then
                   
-                //       sudo apt update
-                //       sudo apt -y install docker.io 
-                //       sudo apt -y install docker-compose
-                //       sudo apt -y install curl unzip 
+                      sudo apt update
+                      sudo apt -y install docker.io 
+                      sudo apt -y install docker-compose
+                      sudo apt -y install curl unzip 
 
-                //       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-                //       unzip awscliv2.zip && \
-                //       sudo ./aws/install
+                      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+                      unzip awscliv2.zip && \
+                      sudo ./aws/install
 
-                //     fi
+                    fi
 
-                //     export AWS_ACCESS_KEY_ID=AKIA4NYEYP6K5UPKPDOM
-                //     export AWS_SECRET_ACCESS_KEY=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
-                //     export AWS_DEFAULT_REGION=us-east-2
+                    cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
 
-                //     aws ecr get-login-password --region us-east-2 | sudo docker login --username AWS --password-stdin 854171615125.dkr.ecr.us-east-2.amazonaws.com
-
-                //     sudo docker-compose -f test/docker-compose.yaml pull
-                //     sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
-                //     sudo docker-compose -f test/docker-compose.yaml ps
-                //     yes | sudo docker image prune
-                //     """
-                // '''
+                    sudo docker-compose -f test/docker-compose.yaml pull
+                    sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
+                    sudo docker-compose -f test/docker-compose.yaml ps
+                    yes | sudo docker image prune
+                    """
+                '''
 
           }
         }
