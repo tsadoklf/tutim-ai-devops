@@ -51,7 +51,6 @@ pipeline {
           - name: kubectl
             image: bitnami/kubectl:latest
             entrypoint: ["sh"]
-            tty: true
 
           - name: terraform
             image: hashicorp/terraform:latest
