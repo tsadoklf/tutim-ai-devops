@@ -48,6 +48,10 @@ pipeline {
         kind: Pod
         spec:
           containers:
+          - name: kubectl
+            image: bitnami/kubectl:latest
+            command: [ "sh" ]
+            tty: true
 
           - name: terraform
             image: hashicorp/terraform:latest
@@ -168,6 +172,30 @@ pipeline {
         }
       }
     }
+
+    stage('Get AWS update-kubeconfig') {
+      steps {
+        container('aws') {
+          sh '''
+            CLUSTER_NAME="k8s-batch3"
+            REGION="us-west-2"
+
+            aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+          '''
+        }
+      }
+    }
+
+    stage('Connect to EKS Cluster') {
+      steps {
+        container('kubectl') {
+          sh '''
+            kubectl get ns
+          '''
+        }
+      }
+    }
+
     stage('Check Docker Daemon Is Up') {
       steps {
         container('dind') {
