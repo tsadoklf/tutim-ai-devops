@@ -1,19 +1,5 @@
-pipeline{ 
-    agent {
-        kubernetes {
-            yaml '''
-                apiVersion: v1
-                kind: Pod
-                spec:
-                  containers:
-                    - name: aws
-                      image: amazon/aws-cli
-                      command: 
-                      - sh
-                      tty: true
-                      volumeMounts:     
-                        - name: shared-data
-                          mountPath: /mnt/shared-data
+pipeline {
+    agent any
 
                   volumes:  
                     - name: dind-storage      
