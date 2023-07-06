@@ -85,6 +85,18 @@ pipeline {
             volumeMounts:     
               - name: shared-data
                 mountPath: /mnt/shared-data
+            env:
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: AWS_ACCESS_KEY_ID
+
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: AWS_SECRET_ACCESS_KEY                
             
           - name: dind  
             image: docker:dind
@@ -170,8 +182,7 @@ pipeline {
           //   echo "username is $USERNAME"
           // }
           sh '''
-            export AWS_ACCESS_KEY_ID=AKIA4NYEYP6K5UPKPDOM
-            export AWS_SECRET_ACCESS_KEY=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
+            echo "Getting AWS ECR token..."
             export AWS_DEFAULT_REGION=us-east-2
             
             aws ecr get-login-password --region us-east-2 > $SHARED_DATA/$AWS_ECR_TOKEN_FILE
