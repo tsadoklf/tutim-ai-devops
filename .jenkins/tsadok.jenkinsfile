@@ -147,6 +147,9 @@ pipeline {
     SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
 
+    GITHUB_ACCOUNT = "tsadoklf"
+    GITHUB_REPO_URL = "https://github.com/${GITHUB_ACCOUNT}/devops-bootcamp-test.git"
+
     // IMAGE_TAG="tsadok-${BUILD_NUMBER}"
     IMAGE_TAG = "tsadok"
   }
@@ -157,7 +160,7 @@ pipeline {
         container('maven') {
           git branch: 'main', changelog: false, poll: false, 
             credentialsId: 'jenkins',
-            url: 'https://github.com/tsadoklf/devops-bootcamp-test.git'
+            url: "${GITHUB_REPO_URL}"
         }
       }
     }  
