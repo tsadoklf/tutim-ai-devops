@@ -50,7 +50,7 @@ pipeline {
           containers:
           - name: kubectl
             image: bitnami/kubectl:latest
-            command: [ "sh" ]
+            entrypoint: ["sh"]
             tty: true
 
           - name: terraform
