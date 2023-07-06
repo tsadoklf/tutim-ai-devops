@@ -49,7 +49,7 @@ pipeline {
         spec:
           containers:
           - name: kubectl
-            image: bitnami/kubectl:latest
+            image: dtzar/helm-kubectl:latest
             entrypoint: ["sh"]
 
           - name: terraform
