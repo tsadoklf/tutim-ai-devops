@@ -50,7 +50,8 @@ pipeline {
           containers:
           - name: kubectl
             image: dtzar/helm-kubectl:latest
-            entrypoint: ["sh"]
+            command: ["sh"]
+            tty: true
 
           - name: terraform
             image: hashicorp/terraform:latest
