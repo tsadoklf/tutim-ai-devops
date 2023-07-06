@@ -160,7 +160,7 @@ pipeline {
         container('maven') {
           git branch: 'main', changelog: false, poll: false, 
             credentialsId: 'jenkins',
-            url: '${GITHUB_REPO_URL}'
+            url: "${GITHUB_REPO_URL}"
         }
       }
     }  
