@@ -31,7 +31,6 @@ Following steps would be followed in order to create a CI/CD pipeline using Jenk
 4. Push images to ECR
 5. Write unit tests (Optional, but we'll do it anyways :) )
 6. Create Infrastructure in AWS, if needed (for 'dev' branch)
-7. Deploy the application on either <b>EC2</b>(Elastic Compute Cloud) or <b>EKS</b>(Elastic Kubernetes Service)
-    a. In order to deploy on EKS we'll be using HELM, package manager for K8S applications.
+7. Deploy the application on either <b>EC2</b>(Elastic Compute Cloud) or <b>EKS</b>(Elastic Kubernetes Service). In order to deploy on EKS we'll be using HELM, package manager for K8S applications.
 
 #### EASY!
