@@ -146,6 +146,7 @@ pipeline {
     
     SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
+    INSTANCE_PUBLIC_IP_FILE = "instance-public-ip"
 
     GITHUB_ACCOUNT = "tsadoklf"
     GITHUB_REPO_URL = "https://github.com/${GITHUB_ACCOUNT}/devops-bootcamp-test.git"
@@ -227,9 +228,9 @@ pipeline {
       }
     }
     stage('Build-and-Push-Docker-Images') {
-    //   when {
-    //     branch 'main-1'
-    //   }
+      when {
+        branch 'main-1'
+      }
       steps {
         script {
           def services = ["frontend", "polybot", "yolo5"] 
