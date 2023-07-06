@@ -1,12 +1,361 @@
-pipeline{ 
-    agent any 
-    stages{
-    stage("hello world"){
-        steps {
-            sh '''
-                echo "hello my name is TLF"
-            '''
+
+def BuildTagAndPush(service) {
+
+  def directory = "object-detection/${service}"
+  def dockerfile = "${service}.dockerfile"
+  def repository = "class-3-object-detection-${service}"
+
+  def registry = "${REGISTRY}"
+  def tag = "${IMAGE_TAG}"
+
+  def local_image_name = "${repository}:${tag}"
+  def remote_image_name = "${registry}/${local_image_name}"
+
+  echo local_image_name
+  echo remote_image_name
+
+  dir(path: directory) {
+
+    sh """
+      pwd
+
+      echo ""
+      ls -l 
+
+      echo ""
+      echo "Building Docker image $local_image_name"   
+      echo "-----------------------------------------------------------"
+      docker build -f $dockerfile -t $local_image_name .
+
+      echo ""
+      echo "Tagging Docker image $local_image_name as $remote_image_name"
+      echo "-----------------------------------------------------------"
+      docker tag $local_image_name $remote_image_name
+
+      echo ""
+      echo "Pushing Docker image $remote_image_name"
+      echo "-----------------------------------------------------------"
+      docker push $remote_image_name
+    """
+  }
+}
+
+pipeline {
+  agent {
+    kubernetes {
+      yaml '''
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: kubectl
+            image: dtzar/helm-kubectl:latest
+            command: ["sh"]
+            tty: true
+
+          - name: terraform
+            image: hashicorp/terraform:latest
+            command: 
+            - sh
+            tty: true
+            env:
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: AWS_ACCESS_KEY_ID
+
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: AWS_SECRET_ACCESS_KEY
+
+            volumeMounts:     
+              - name: shared-data
+                mountPath: /mnt/shared-data                    
+
+          - name: maven
+            image: maven:alpine
+            command:
+            - cat
+            tty: true
+            
+          - name: aws
+            image: amazon/aws-cli
+            command:
+            - sh
+            tty: true
+            volumeMounts:     
+              - name: shared-data
+                mountPath: /mnt/shared-data
+            env:
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: AWS_ACCESS_KEY_ID
+
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-credentials
+                    key: AWS_SECRET_ACCESS_KEY                
+            
+          - name: dind  
+            image: docker:dind
+            imagePullPolicy: Always
+            ports:     
+              - containerPort: 2375
+                protocol: TCP
+            env:     
+              - name: DOCKER_TLS_CERTDIR
+                value: ""
+            resources:
+              requests:
+                cpu: 500m
+                memory: 512Mi
+              limits:
+                cpu: 2000m
+                memory: 2Gi
+            tty: true
+            volumeMounts:     
+              - name: dind-storage
+                mountPath: /var/lib/docker
+              - name: shared-data
+                mountPath: /mnt/shared-data
+            securityContext:   
+              privileged: true          
+          
+          volumes:  
+          - name: dind-storage      
+            emptyDir: {}
+          - name: shared-data
+            emptyDir: {}            
+              
+        '''
+    }
+  }
+  environment { 
+    AWS_ACCOUNT  = "854171615125"
+    AWS_ECR_REGION = "us-east-2"
+    
+    REGISTRY = "${AWS_ACCOUNT}.dkr.ecr.${AWS_ECR_REGION}.amazonaws.com"
+
+    DOCKER_USERNAME = "AWS"
+    
+    SHARED_DATA_PATH = "/mnt/shared-data"
+    AWS_ECR_TOKEN_FILE = "aws-ecr-token"
+
+    // IMAGE_TAG="tsadok-${BUILD_NUMBER}"
+    IMAGE_TAG = "tsadok"
+  }
+  stages {
+    // git branch: 'main', changelog: false, poll: false, url: 'https://mohdsabir-cloudside@bitbucket.org/mohdsabir-cloudside/java-app.git'
+    stage('Clone Code') {
+      steps {
+        container('maven') {
+          git branch: 'main', changelog: false, poll: false, 
+            credentialsId: 'jenkins',
+            url: 'https://github.com/tsadoklf/devops-bootcamp-test.git'
+        }
+      }
+    }  
+
+    stage('Get AWS ECR Token') {
+      steps {
+        container('aws') {
+          sh '''
+            echo "Getting AWS ECR token for Docker login..."
+            aws ecr get-login-password --region $AWS_ECR_REGION > $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE
+          '''
+        }
+      }
+    }
+
+    // stage('Get AWS update-kubeconfig') {
+    //   steps {
+    //     container('aws') {
+    //       sh '''
+    //         CLUSTER_NAME="k8s-batch3"
+    //         REGION="us-west-2"
+
+    //         aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+
+    //         cat /root/.kube/config
+    //       '''
+    //     }
+    //   }
+    // }
+
+    // stage('Connect to EKS Cluster') {
+    //   steps {
+    //     container('kubectl') {
+    //       sh '''
+    //         ls -l
+    //         cat /root/.kube/config
+    //       '''
+    //     }
+    //   }
+    // }
+
+    stage('Check Docker Daemon Is Up') {
+      steps {
+        container('dind') {
+          sh '''
+            echo "Waiting for Docker daemon to be up ..."
+
+            # Check if Docker daemon is running
+            until docker version &> /dev/null; do
+              sleep 1
+            done
+            echo "Docker daemon is up!"
+          '''
+        }
+      }
+    }
+    stage('Login-into-Docker') {
+      steps {
+        container('dind') {
+          sh '''
+            cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
+        '''
+        }
+      }
+    }
+    stage('Build-and-Push-Docker-Images') {
+    //   when {
+    //     branch 'main-1'
+    //   }
+      steps {
+        script {
+          def services = ["frontend", "polybot", "yolo5"] 
+          for (int i = 0; i < services.size(); i++) {
+            stage("Build ${services[i]}") {
+              container('dind') {
+                BuildTagAndPush("${services[i]}")
+              }
             }
+          }
+        }
+      }
+    }
+
+    stage('Terraform: Create Infrastructure') {
+      when {
+        branch 'main-1'
+      }
+      steps {
+        container('terraform') {
+          dir(path: "terraform") {
+            sh '''
+
+              echo AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+
+              echo ""
+              terraform version
+
+              echo ""
+              echo "Initializing Terraform (backend: S3)"
+              terraform init -backend-config=backend.hcl
+
+              echo ""
+              echo "Validating Terraform"
+              terraform validate
+
+              echo ""
+              echo "Planning Terraform"
+              terraform plan -out=tfplan
+
+              echo ""
+              echo "Applying Terraform"
+              terraform apply -auto-approve tfplan
+
+              echo ""
+              echo "Showing Terraform state"
+              terraform show
+
+              echo ""
+              echo "Getting instance public IP"
+              OUTPUT_NAME="instance_public_ip"
+              terraform output $OUTPUT_NAME > $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
+
+              echo ""
+              echo "Done creating infrastructure with Terraform"
+
+            '''
+          }
+        }
+      }
+    }
+
+    stage ("Deploy Code to EC2 Inatance"){
+       when {
+        branch 'main-1'
+      }
+      steps{
+        container('terraform') {
+                 sh '''
+
+                  cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
+
+                '''
+          withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
+                // sh '''
+
+                //   cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
+
+                // '''
+                // sh '''
+
+
+                //   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ubuntu@3.23.150.145 """
+                //     mkdir -p /home/ubuntu/test
+                //     ls -l
+                //     """
+
+                //   scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ubuntu@3.23.150.145:/home/ubuntu/test/docker-compose.yaml
+
+                //   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ubuntu@3.23.150.145 """
+
+                //     if docker version &> /dev/null; then
+                  
+                //       sudo apt update
+                //       sudo apt -y install docker.io 
+                //       sudo apt -y install docker-compose
+                //       sudo apt -y install curl unzip 
+
+                //       curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+                //       unzip awscliv2.zip && \
+                //       sudo ./aws/install
+
+                //     fi
+
+                //     export AWS_ACCESS_KEY_ID=AKIA4NYEYP6K5UPKPDOM
+                //     export AWS_SECRET_ACCESS_KEY=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
+                //     export AWS_DEFAULT_REGION=us-east-2
+
+                //     aws ecr get-login-password --region us-east-2 | sudo docker login --username AWS --password-stdin 854171615125.dkr.ecr.us-east-2.amazonaws.com
+
+                //     sudo docker-compose -f test/docker-compose.yaml pull
+                //     sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
+                //     sudo docker-compose -f test/docker-compose.yaml ps
+                //     yes | sudo docker image prune
+                //     """
+                // '''
+
+          }
+        }
+      }
+    }  
+  }
+  post {
+    always {
+        container('dind') {
+          sh '''
+            docker logout
+          '''
         }
     }
-}
+  }
+} 
