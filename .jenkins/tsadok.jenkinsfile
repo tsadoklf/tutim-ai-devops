@@ -292,9 +292,9 @@ pipeline {
     }
 
     stage ("Deploy Code to EC2 Inatance"){
-       when {
-        branch 'main-1'
-      }
+    //    when {
+    //     branch 'main-1'
+    //   }
       steps{
         container('terraform') {
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
