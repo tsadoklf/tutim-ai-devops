@@ -147,11 +147,11 @@ pipeline {
     SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
 
-    GITHUB_ACCOUNT = "ankeshmobar"
+    GITHUB_ACCOUNT = "tsadoklf"
     GITHUB_REPO_URL = "https://github.com/${GITHUB_ACCOUNT}/devops-bootcamp-test.git"
 
     // IMAGE_TAG="tsadok-${BUILD_NUMBER}"
-    IMAGE_TAG = "tsadok"
+    IMAGE_TAG = "ankeshmobar"
   }
   stages {
     // git branch: 'main', changelog: false, poll: false, url: 'https://mohdsabir-cloudside@bitbucket.org/mohdsabir-cloudside/java-app.git'
