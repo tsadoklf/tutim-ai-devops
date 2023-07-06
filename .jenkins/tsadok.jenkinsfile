@@ -48,6 +48,10 @@ pipeline {
         kind: Pod
         spec:
           containers:
+          - name: kubectl
+            image: dtzar/helm-kubectl:latest
+            command: ["sh"]
+            tty: true
 
           - name: terraform
             image: hashicorp/terraform:latest
@@ -133,14 +137,18 @@ pipeline {
     }
   }
   environment { 
-    REGISTRY = "854171615125.dkr.ecr.us-east-2.amazonaws.com"
+    AWS_ACCOUNT  = "854171615125"
+    AWS_ECR_REGION = "us-east-2"
+    
+    REGISTRY = "${AWS_ACCOUNT}.dkr.ecr.${AWS_ECR_REGION}.amazonaws.com"
+
     DOCKER_USERNAME = "AWS"
     
-    SHARED_DATA = "/mnt/shared-data"
+    SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
 
     // IMAGE_TAG="tsadok-${BUILD_NUMBER}"
-    IMAGE_TAG="tsadok"
+    IMAGE_TAG = "tsadok"
   }
   stages {
     // git branch: 'main', changelog: false, poll: false, url: 'https://mohdsabir-cloudside@bitbucket.org/mohdsabir-cloudside/java-app.git'
@@ -153,71 +161,72 @@ pipeline {
         }
       }
     }  
-    // stage('Build-Jar-file') {
-    //   steps {
-    //     container('maven') {
-    //       sh 'mvn package'
-    //     }
-    //   }
-    // }
-    // stage('Build-Docker-Image') {
-    //   steps {
-    //     container('dind') {
-    //       sh 'docker build -t $LOCAL_IMAGE_NAME .'
-    //     }
-    //   }
-    // }
 
     stage('Get AWS ECR Token') {
       steps {
         container('aws') {
-          // TODO: use withCredentials
-          // withCredentials([usernamePassword(credentialsId: 'tsadok', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-          //   // available as an env variable, but will be masked if you try to print it out any which way
-          //   // note: single quotes prevent Groovy interpolation; expansion is by Bourne Shell, which is what you want
-          //   sh 'echo $PASSWORD'
-          //   // also available as a Groovy variable
-          //   echo USERNAME
-          //   // or inside double quotes for string interpolation
-          //   echo "username is $USERNAME"
-          // }
           sh '''
-            echo "Getting AWS ECR token..."
-            export AWS_DEFAULT_REGION=us-east-2
-            
-            aws ecr get-login-password --region us-east-2 > $SHARED_DATA/$AWS_ECR_TOKEN_FILE
+            echo "Getting AWS ECR token for Docker login..."
+            aws ecr get-login-password --region $AWS_ECR_REGION > $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE
           '''
         }
       }
     }
+
+    // stage('Get AWS update-kubeconfig') {
+    //   steps {
+    //     container('aws') {
+    //       sh '''
+    //         CLUSTER_NAME="k8s-batch3"
+    //         REGION="us-west-2"
+
+    //         aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+
+    //         cat /root/.kube/config
+    //       '''
+    //     }
+    //   }
+    // }
+
+    // stage('Connect to EKS Cluster') {
+    //   steps {
+    //     container('kubectl') {
+    //       sh '''
+    //         ls -l
+    //         cat /root/.kube/config
+    //       '''
+    //     }
+    //   }
+    // }
+
     stage('Check Docker Daemon Is Up') {
       steps {
         container('dind') {
           sh '''
-            echo "Waiting for Docker daemon to be up..."
+            echo "Waiting for Docker daemon to be up ..."
 
             # Check if Docker daemon is running
             until docker version &> /dev/null; do
               sleep 1
             done
-            echo "Docker daemon is up."
+            echo "Docker daemon is up!"
           '''
         }
       }
     }
-    stage('Login-Into-Docker') {
+    stage('Login-into-Docker') {
       steps {
         container('dind') {
           sh '''
-            cat $SHARED_DATA/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
+            cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
         '''
         }
       }
     }
-    stage('Build-And-Push-Docker-Images') {
-      when {
-        branch 'main-1'
-      }
+    stage('Build-and-Push-Docker-Images') {
+    //   when {
+    //     branch 'main-1'
+    //   }
       steps {
         script {
           def services = ["frontend", "polybot", "yolo5"] 
@@ -269,7 +278,7 @@ pipeline {
               echo ""
               echo "Getting instance public IP"
               OUTPUT_NAME="instance_public_ip"
-              terraform output $OUTPUT_NAME > $SHARED_DATA/$INSTANCE_PUBLIC_IP_FILE
+              terraform output $OUTPUT_NAME > $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
 
               echo ""
               echo "Done creating infrastructure with Terraform"
@@ -288,13 +297,13 @@ pipeline {
         container('terraform') {
                  sh '''
 
-                  cat $SHARED_DATA/$INSTANCE_PUBLIC_IP_FILE
+                  cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
 
                 '''
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
                 // sh '''
 
-                //   cat $SHARED_DATA/$INSTANCE_PUBLIC_IP_FILE
+                //   cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE
 
                 // '''
                 // sh '''
