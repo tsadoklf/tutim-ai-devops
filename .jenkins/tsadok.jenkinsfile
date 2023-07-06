@@ -181,6 +181,8 @@ pipeline {
             REGION="us-west-2"
 
             aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+
+            cat /root/.kube/config
           '''
         }
       }
@@ -190,7 +192,8 @@ pipeline {
       steps {
         container('kubectl') {
           sh '''
-            kubectl get ns
+            ls -l
+            cat /root/.kube/config
           '''
         }
       }
