@@ -43,97 +43,9 @@ def BuildTagAndPush(service) {
 pipeline {
   agent {
     kubernetes {
-      yaml '''
-        apiVersion: v1
-        kind: Pod
-        spec:
-          containers:
-          - name: kubectl
-            image: dtzar/helm-kubectl:latest
-            command: ["sh"]
-            tty: true
-
-          - name: terraform
-            image: hashicorp/terraform:latest
-            command: 
-            - sh
-            tty: true
-            env:
-              - name: AWS_ACCESS_KEY_ID
-                valueFrom:
-                  secretKeyRef:
-                    name: aws-credentials
-                    key: AWS_ACCESS_KEY_ID
-
-              - name: AWS_SECRET_ACCESS_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: aws-credentials
-                    key: AWS_SECRET_ACCESS_KEY
-
-            volumeMounts:     
-              - name: shared-data
-                mountPath: /mnt/shared-data                    
-
-          - name: maven
-            image: maven:alpine
-            command:
-            - cat
-            tty: true
-            
-          - name: aws
-            image: amazon/aws-cli
-            command:
-            - sh
-            tty: true
-            volumeMounts:     
-              - name: shared-data
-                mountPath: /mnt/shared-data
-            env:
-              - name: AWS_ACCESS_KEY_ID
-                valueFrom:
-                  secretKeyRef:
-                    name: aws-credentials
-                    key: AWS_ACCESS_KEY_ID
-
-              - name: AWS_SECRET_ACCESS_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: aws-credentials
-                    key: AWS_SECRET_ACCESS_KEY                
-            
-          - name: dind  
-            image: docker:dind
-            imagePullPolicy: Always
-            ports:     
-              - containerPort: 2375
-                protocol: TCP
-            env:     
-              - name: DOCKER_TLS_CERTDIR
-                value: ""
-            resources:
-              requests:
-                cpu: 500m
-                memory: 512Mi
-              limits:
-                cpu: 2000m
-                memory: 2Gi
-            tty: true
-            volumeMounts:     
-              - name: dind-storage
-                mountPath: /var/lib/docker
-              - name: shared-data
-                mountPath: /mnt/shared-data
-            securityContext:   
-              privileged: true          
-          
-          volumes:  
-          - name: dind-storage      
-            emptyDir: {}
-          - name: shared-data
-            emptyDir: {}            
-              
-        '''
+    //   yaml '''
+    //   '''
+        yamlFile '.jenkins/pod_templates/pod_template_extended.yaml'
     }
   }
   environment { 
@@ -146,7 +58,7 @@ pipeline {
     
     SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
-    INSTANCE_PUBLIC_IP_FILE = "instance-public-ip"
+    EC2_INSTANCES_PUBLIC_IP_ADDRESSES = "ec2-instances-public-ip-addresses"
 
     GITHUB_ACCOUNT = "tsadoklf"
     GITHUB_REPO_URL = "https://github.com/${GITHUB_ACCOUNT}/devops-bootcamp-test.git"
@@ -281,8 +193,8 @@ pipeline {
               echo "Getting instance public IP"
               OUTPUT_NAME="instance_public_ip"
               
-              terraform output $OUTPUT_NAME | xargs > $SHARED_DATA/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
-              cat $SHARED_DATA/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+              terraform output $OUTPUT_NAME | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+              cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
 
               echo ""
               echo "Done creating infrastructure with Terraform"
@@ -302,7 +214,7 @@ pipeline {
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
                 sh '''
 
-                  EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$INSTANCE_PUBLIC_IP_FILE)  
+                  EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES)  
                   EC2_ADMIN_USERNAME="ubuntu"
                   EC2_ADDRESS="${EC2_ADMIN_USERNAME}@${EC2_INSTANCE_PUBLIC_IP}"
 
