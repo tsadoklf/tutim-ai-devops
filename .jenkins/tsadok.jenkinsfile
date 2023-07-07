@@ -278,7 +278,7 @@ pipeline {
                     echo ""
                     echo "Checking if Docker is installed"
                     if [[ "$(which docker)" != "" && "$(docker --version)" != "" ]]; then
-  
+                        echo "TODO: check if Docker is installed"
 
                     fi
 
