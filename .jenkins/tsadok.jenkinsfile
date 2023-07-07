@@ -249,6 +249,7 @@ pipeline {
     //    when {
     //     branch 'main-1'
     //   }
+    // if docker version &> /dev/null; then
       steps{
         container('terraform') {
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
@@ -267,7 +268,9 @@ pipeline {
 
                   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
 
-                    if docker version &> /dev/null; then
+                    
+                    if [[ $(which docker) && $(docker --version) ]]; then
+  
                   
                       sudo apt update
                       sudo apt -y install docker.io 
