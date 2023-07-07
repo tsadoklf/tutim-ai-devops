@@ -258,18 +258,22 @@ pipeline {
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
                 sh '''
 
-                  EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES)  
-                  EC2_ADMIN_USERNAME="ubuntu"
-                  EC2_ADDRESS="${EC2_ADMIN_USERNAME}@${EC2_INSTANCE_PUBLIC_IP}"
+                    EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES)  
+                    EC2_ADMIN_USERNAME="ubuntu"
+                    EC2_ADDRESS="${EC2_ADMIN_USERNAME}@${EC2_INSTANCE_PUBLIC_IP}"
 
-                  ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
-                    mkdir -p /home/ubuntu/test
-                    ls -l
+                    ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
+                        mkdir -p /home/ubuntu/test
+                        ls -l
                     """
 
                     echo ""
                     echo "Copying docker-compose.yaml to EC2 instance"
-                  scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ${EC2_ADDRESS}:/home/ubuntu/test/docker-compose.yaml
+                    scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ${EC2_ADDRESS}:/home/ubuntu/test/docker-compose.yaml
+
+                    echo ""
+                    echo "Copying aws-ecr-token to EC2 instance"
+                    scp -r -i ${CREDENTIALS_FILE} $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE ${EC2_ADDRESS}:/home/ubuntu/test/$AWS_ECR_TOKEN_FILE
 
                     echo ""
                     echo "Running docker-compose.yaml on EC2 instance"
@@ -281,8 +285,7 @@ pipeline {
                         echo "TODO: check if Docker is installed"
 
                     fi
-
-                                      
+         
                     sudo apt update
                     sudo apt -y install docker.io 
                     sudo apt -y install docker-compose
@@ -295,7 +298,7 @@ pipeline {
                     done
                     echo "Docker daemon is up!"
 
-                    cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
+                    cat test/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
 
                     sudo docker-compose -f test/docker-compose.yaml pull
                     sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
