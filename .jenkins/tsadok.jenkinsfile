@@ -59,6 +59,7 @@ pipeline {
     SHARED_DATA_PATH = "/mnt/shared-data"
     AWS_ECR_TOKEN_FILE = "aws-ecr-token"
     EC2_INSTANCES_PUBLIC_IP_ADDRESSES = "ec2-instances-public-ip-addresses"
+    EC2_INSTANCES_IDS = "ec2-instances-ids"
 
     GITHUB_ACCOUNT = "tsadoklf"
     GITHUB_REPO_URL = "https://github.com/${GITHUB_ACCOUNT}/devops-bootcamp-test.git"
@@ -190,17 +191,40 @@ pipeline {
               terraform show
 
               echo ""
-              echo "Getting instance public IP"
-              OUTPUT_NAME="instance_public_ip"
-              
-              terraform output $OUTPUT_NAME | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+              echo "Getting instance ID"  
+              terraform output "instance_id" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
+              cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
+
+
+              echo ""
+              echo "Getting instance public IP"  
+              terraform output "instance_public_ip" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
               cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+
+
 
               echo ""
               echo "Done creating infrastructure with Terraform"
 
             '''
           }
+        }
+      }
+    }
+
+    stage('Make sure EC2 instance is up') {
+      steps {
+        container('aws') {
+          sh '''
+            echo "Retrieving EC2 instance IDs from shared data volume ..."
+            INSTANCE_IDS=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS)
+
+            echo "Restarting EC2 instances ..."
+            aws ec2 start-instances --instance-ids $INSTANCE_IDS
+
+            echo "Waiting for EC2 instance to be up ..."
+            aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
+          '''
         }
       }
     }
