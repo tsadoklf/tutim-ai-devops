@@ -230,12 +230,7 @@ pipeline {
             --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs
 
 
-             echo "Waiting for EC2 instance to be up ..."
-            until $(aws ec2 describe-instance-status \
-            --query "InstanceStatuses[0].InstanceState.Name" \
-            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs) = "running" ; do
-              sleep 1
-            done
+
             
 
             
@@ -243,8 +238,12 @@ pipeline {
         }
       }
     }
-    // echo "Waiting for EC2 instance to be up ..."
-    //         aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
+            //  echo "Waiting for EC2 instance to be up ..."
+            // until $(aws ec2 describe-instance-status \
+            // --query "InstanceStatuses[0].InstanceState.Name" \
+            // --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs) = "running" ; do
+            //   sleep 1
+            // done        aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
 
     stage ("Deploy Code to EC2 Inatance"){
     //    when {
