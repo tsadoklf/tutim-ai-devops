@@ -212,6 +212,7 @@ pipeline {
       }
     }
 
+// "running"
     stage('Make sure EC2 instance is up') {
       steps {
         container('aws') {
@@ -222,6 +223,20 @@ pipeline {
 
             echo "Restarting EC2 instances ..."
             aws ec2 start-instances --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
+
+
+            aws ec2 describe-instance-status \
+            --query "InstanceStatuses[0].InstanceState.Name" \
+            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
+
+
+             echo "Waiting for EC2 instance to be up ..."
+            until $(aws ec2 describe-instance-status \
+            --query "InstanceStatuses[0].InstanceState.Name" \
+            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS) == "running" ; do
+              sleep 1
+            done
+            
 
             
           '''
