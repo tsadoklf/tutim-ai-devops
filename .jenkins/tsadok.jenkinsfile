@@ -269,7 +269,7 @@ pipeline {
                   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
 
                     
-                    if [[ $(which docker) && $(docker --version) ]]; then
+                    if [[ "$(which docker)" != "" && "$(docker --version)" != "" ]]; then
   
                   
                       sudo apt update
