@@ -227,13 +227,13 @@ pipeline {
 
             aws ec2 describe-instance-status \
             --query "InstanceStatuses[0].InstanceState.Name" \
-            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
+            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs
 
 
              echo "Waiting for EC2 instance to be up ..."
             until $(aws ec2 describe-instance-status \
             --query "InstanceStatuses[0].InstanceState.Name" \
-            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS) == "running" ; do
+            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs) == "running" ; do
               sleep 1
             done
             
