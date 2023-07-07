@@ -298,7 +298,7 @@ pipeline {
                     done
                     echo "Docker daemon is up!"
 
-                    cat test/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
+                    cat test/$AWS_ECR_TOKEN_FILE | sudo docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
 
                     sudo docker-compose -f test/docker-compose.yaml pull
                     sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
