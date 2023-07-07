@@ -245,6 +245,9 @@ pipeline {
             //   sleep 1
             // done        aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
 
+                    //   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+                    //   unzip awscliv2.zip && \
+                    //   sudo ./aws/install
     stage ("Deploy Code to EC2 Inatance"){
     //    when {
     //     branch 'main-1'
@@ -264,11 +267,16 @@ pipeline {
                     ls -l
                     """
 
+                    echo ""
+                    echo "Copying docker-compose.yaml to EC2 instance"
                   scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ${EC2_ADDRESS}:/home/ubuntu/test/docker-compose.yaml
 
+                    echo ""
+                    echo "Running docker-compose.yaml on EC2 instance"
                   ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
 
-                    
+                    echo ""
+                    echo "Checking if Docker is installed"
                     if [[ "$(which docker)" != "" && "$(docker --version)" != "" ]]; then
   
                   
@@ -276,12 +284,14 @@ pipeline {
                       sudo apt -y install docker.io 
                       sudo apt -y install docker-compose
                       sudo apt -y install curl unzip 
-
-                      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-                      unzip awscliv2.zip && \
-                      sudo ./aws/install
-
                     fi
+
+                    echo ""
+                    echo "Waiting for Docker daemon to be up ..."
+                    until docker version &> /dev/null; do
+                    sleep 1
+                    done
+                    echo "Docker daemon is up!"
 
                     cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
 
