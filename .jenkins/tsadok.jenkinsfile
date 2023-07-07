@@ -45,7 +45,7 @@ pipeline {
     kubernetes {
     //   yaml '''
     //   '''
-        yamlFile 'pod_templates/pod_template_extended.yaml'
+        yamlFile '.jenkins/pod_templates/pod_template_extended.yaml'
     }
   }
   environment { 
