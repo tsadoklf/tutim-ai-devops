@@ -279,16 +279,18 @@ pipeline {
                     echo "Checking if Docker is installed"
                     if [[ "$(which docker)" != "" && "$(docker --version)" != "" ]]; then
   
-                  
-                      sudo apt update
-                      sudo apt -y install docker.io 
-                      sudo apt -y install docker-compose
-                      sudo apt -y install curl unzip 
+
                     fi
+
+                                      
+                    sudo apt update
+                    sudo apt -y install docker.io 
+                    sudo apt -y install docker-compose
+                    sudo apt -y install curl unzip 
 
                     echo ""
                     echo "Waiting for Docker daemon to be up ..."
-                    until docker version &> /dev/null; do
+                    until sudo docker version &> /dev/null; do
                     sleep 1
                     done
                     echo "Docker daemon is up!"
