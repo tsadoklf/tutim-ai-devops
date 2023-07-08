@@ -20,7 +20,7 @@ def BuildTagAndPush(service) {
   def repository = "class-3-object-detection-${service}"
   
   def region = "${AWS_ECR_REGION}"
-  
+
   createECRRepository(region, repository)
 
   def registry = "${REGISTRY}"
@@ -159,9 +159,9 @@ pipeline {
       }
     }
     stage('Build-and-Push-Docker-Images') {
-      when {
-        branch 'main-1'
-      }
+    //   when {
+    //     branch 'main-1'
+    //   }
       steps {
         script {
           def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot", "tumblr"] 
