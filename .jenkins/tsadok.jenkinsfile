@@ -211,12 +211,26 @@ pipeline {
                 --set ingress.hosts[0].paths[0].path=/helm-hello-world \
                 --set ingress.hosts[0].paths[0].pathType=Prefix \
                 --set ingress.hosts[0].host=$HOST_NAME \
-                --set replicaCount=3 \
-                --set image.repository=ghcr.io/infrastructure-as-code/hello-world \
-                --set image.tag=latest
+                --set replicaCount=3
+                
+                // --set image.repository=ghcr.io/infrastructure-as-code/hello-world \
+                // --set image.tag=latest
                 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
+
+            helm repo add portainer https://portainer.github.io/k8s/
+            helm repo update
+
+            helm upgrade --install --create-namespace -n portainer portainer portainer/portainer \
+                --set service.type=ClusterIP \
+                --set tls.force=false \
+                --set ingress.enabled=true \
+                --set ingress.ingressClassName=nginx \
+                --set ingress.annotations."nginx\.ingress\.kubernetes\.io/backend-protocol"=HTTPS \
+                --set ingress.hosts[0].host=$HOST_NAME \
+                --set ingress.hosts[0].paths[0].path="/portainer"
+
           '''
         }
       }
