@@ -198,16 +198,19 @@ pipeline {
             fi
 
             SECRET_NAME="ecr-credentials"
-            
+
+            set +x            
             DOCKER_USERNAME="AWS"
-            DOCKER_PASSWORD=$(cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE)
+            
 
             kubectl create secret docker-registry $SECRET_NAME \
                 --docker-server=$REGISTRY \
-                --docker-username=$DOCKER_USERNAME \
-                --docker-password=$DOCKER_PASSWORD \
+                --docker-username="AWS" \
+                --docker-password="$(cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE)" \
                 --namespace=$NAMESPACE || true
 
+            set -x
+            
             RELEASE_NAME="upes-ai-bot"
             CHART_NAME="upes-ai-bot"
             CHART_REPO="./helm/upes-ai-bot"
