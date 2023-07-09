@@ -131,6 +131,10 @@ pipeline {
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
                     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
+            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 && \
+                chmod 700 get_helm.sh && \
+                ./get_helm.sh                    
+
             kubectl get ns --kubeconfig $KUBECONFIG
 
             ls -la
@@ -147,10 +151,29 @@ pipeline {
 
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
 
+            NAMESPACE="hello-world"
+
+            echo ""
+            echo "Installing another version of Hello-World in namespace $NAMESPACE using helm"
+            echo "-----------------------------------------------------------"
+
+            RELEASE_NAME="hello-world"
+            CHART_NAME="hello-world"
+            CHART_REPO="helm/hello-world"
+            VALUES_FILE="k8s-install-jenkins-helm-values.yaml"
+
+            echo ""
+            echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
+            echo "-----------------------------------------------------------"
+            helm upgrade --install $RELEASE_NAME $CHART_NAME \
+            --repo $CHART_REPO \
+            --namespace $NAMESPACE  
+            
           '''
         }
       }
     }
+    // --values $VALUES_FILE
 
     stage('Docker: Check Daemon Is Up') {
         steps {
