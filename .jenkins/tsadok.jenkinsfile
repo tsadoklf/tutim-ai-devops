@@ -175,6 +175,14 @@ pipeline {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
+            NAMESPACE="nginx"
+            SERVICE_NAME="ingress-nginx-controller "
+
+            # Get the external IP/hostname
+            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            echo "HOST_NAME: $HOST_NAME"
+
+
             ls -la
             ls -l helm
 
@@ -191,6 +199,8 @@ pipeline {
             CHART_REPO="./helm/hello-world"
             VALUES_FILE="k8s-install-jenkins-helm-values.yaml"
 
+
+
             echo ""
             echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
             echo "-----------------------------------------------------------"
@@ -198,9 +208,9 @@ pipeline {
                 --install \
                 --namespace $NAMESPACE \
                 --kubeconfig $KUBECONFIG \
-                --set ingress.hosts[0].paths[0].path=/hello \
+                --set ingress.hosts[0].paths[0].path=/helm-hello-world \
                 --set ingress.hosts[0].paths[0].pathType=Prefix \
-                --set ingress.hosts[0].host=aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com
+                --set ingress.hosts[0].host=$HOST_NAME
                 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
