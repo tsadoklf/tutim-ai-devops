@@ -159,9 +159,9 @@ pipeline {
       }
     }
     stage('Build-and-Push-Docker-Images') {
-    //   when {
-    //     branch 'main-1'
-    //   }
+      when {
+        branch 'main'
+      }
       steps {
         script {
         //   def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot", "tumblr"] 
@@ -178,9 +178,9 @@ pipeline {
     }
 
     stage('Terraform: Create Infrastructure') {
-    //   when {
-    //     branch 'main-1'
-    //   }
+      when {
+        branch 'main'
+      }
       steps {
         container('terraform') {
           dir(path: "terraform") {
@@ -243,26 +243,25 @@ pipeline {
             echo "Restarting EC2 instances ..."
             aws ec2 start-instances --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
 
-
+            echo ""
+            echo "Checking EC2 instance status ..."
             aws ec2 describe-instance-status \
             --query "InstanceStatuses[0].InstanceState.Name" \
             --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs
 
-
-
+            echo ""
             
-
-            
+            until [[ "$(aws ec2 describe-instance-status \
+            --query "InstanceStatuses[0].InstanceState.Name" \
+            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs)" = "running" ]] ; do
+                echo "Waiting for EC2 instance to be up ..."
+              sleep 1
+            done 
           '''
         }
       }
     }
-            //  echo "Waiting for EC2 instance to be up ..."
-            // until $(aws ec2 describe-instance-status \
-            // --query "InstanceStatuses[0].InstanceState.Name" \
-            // --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs) = "running" ; do
-            //   sleep 1
-            // done        aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
+                //   aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
 
                     //   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
                     //   unzip awscliv2.zip && \
