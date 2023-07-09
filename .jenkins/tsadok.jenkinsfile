@@ -118,7 +118,7 @@ pipeline {
 
             aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION --kubeconfig $KUBECONFIG
 
-            cat /root/.kube/config
+            cat $KUBECONFIG
           '''
         }
       }
