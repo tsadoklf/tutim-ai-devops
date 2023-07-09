@@ -132,7 +132,7 @@ pipeline {
           sh '''
             pwd
             ls -l
-            cat KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+            cat $KUBECONFIG
           '''
         }
       }
