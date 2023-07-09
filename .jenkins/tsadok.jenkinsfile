@@ -128,7 +128,7 @@ pipeline {
 
     stage('Connect to EKS Cluster') {
       steps {
-        container('kubectl') {
+        container('aws') {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
             pwd
