@@ -108,31 +108,32 @@ pipeline {
       }
     }
 
-    // stage('Get AWS update-kubeconfig') {
-    //   steps {
-    //     container('aws') {
-    //       sh '''
-    //         CLUSTER_NAME="k8s-batch3"
-    //         REGION="us-west-2"
+    stage('Get AWS update-kubeconfig') {
+      steps {
+        container('aws') {
+          sh '''
+            CLUSTER_NAME="k8s-batch3"
+            REGION="us-west-2"
+            KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
-    //         aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION
+            aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION --kubeconfig $KUBECONFIG
 
-    //         cat /root/.kube/config
-    //       '''
-    //     }
-    //   }
-    // }
+            cat /root/.kube/config
+          '''
+        }
+      }
+    }
 
-    // stage('Connect to EKS Cluster') {
-    //   steps {
-    //     container('kubectl') {
-    //       sh '''
-    //         ls -l
-    //         cat /root/.kube/config
-    //       '''
-    //     }
-    //   }
-    // }
+    stage('Connect to EKS Cluster') {
+      steps {
+        container('kubectl') {
+          sh '''
+            ls -l
+            cat KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+          '''
+        }
+      }
+    }
 
     stage('Docker: Check Daemon Is Up') {
         steps {
