@@ -87,7 +87,7 @@ pipeline {
   }
   stages {
     // git branch: 'main', changelog: false, poll: false, url: 'https://mohdsabir-cloudside@bitbucket.org/mohdsabir-cloudside/java-app.git'
-    stage('Clone Code') {
+    stage('Git: Clone Code') {
       steps {
         container('maven') {
           git branch: 'main', changelog: false, poll: false, 
@@ -97,7 +97,7 @@ pipeline {
       }
     }  
 
-    stage('Get AWS ECR Token') {
+    stage('AWS: Get ECR Token') {
       steps {
         container('aws') {
           sh '''
@@ -134,33 +134,35 @@ pipeline {
     //   }
     // }
 
-    stage('Check Docker Daemon Is Up') {
-      steps {
-        container('dind') {
-          sh '''
-            echo "Waiting for Docker daemon to be up ..."
+    stage('Docker: Check Daemon Is Up') {
+        steps {
+            container('dind') {
+                sh '''
+                    echo "Waiting for Docker daemon to be up ..."
 
-            # Check if Docker daemon is running
-            until docker version &> /dev/null; do
-              sleep 1
-            done
-            echo "Docker daemon is up!"
-          '''
+                    # Check if Docker daemon is running
+                    until docker version &> /dev/null; do
+                    sleep 1
+                    done
+                    echo "Docker daemon is up!"
+                '''
+            }
         }
-      }
     }
-    stage('Login-into-Docker') {
-      steps {
-        container('dind') {
-          sh '''
-            cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
-        '''
+    stage('Docker: Login to ECR') {
+        steps {
+            container('dind') {
+                sh '''
+                    cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE | docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
+                '''
+            }
         }
-      }
     }
-    stage('Build-and-Push-Docker-Images') {
-      when {
-        branch 'main'
+    stage('Docker: Build, Tag & Push Images') {
+      when {      
+        expression {
+            return env.BRANCH_NAME != 'main';
+        }
       }
       steps {
         script {
@@ -178,95 +180,103 @@ pipeline {
     }
 
     stage('Terraform: Create Infrastructure') {
-      when {
-        branch 'main'
-      }
-      steps {
-        container('terraform') {
-          dir(path: "terraform") {
-            sh '''
-
-              echo ""
-              terraform version
-
-              echo ""
-              echo "Initializing Terraform (backend: S3)"
-              terraform init -backend-config=backend.hcl
-
-              echo ""
-              echo "Validating Terraform"
-              terraform validate
-
-              echo ""
-              echo "Planning Terraform"
-              terraform plan -out=tfplan
-
-              echo ""
-              echo "Applying Terraform"
-              terraform apply -auto-approve tfplan
-
-              echo ""
-              echo "Showing Terraform state"
-              terraform show
-
-              echo ""
-              echo "Getting instance ID"  
-              terraform output "instance_id" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
-              cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
-
-
-              echo ""
-              echo "Getting instance public IP"  
-              terraform output "instance_public_ip" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
-              cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
-
-
-
-              echo ""
-              echo "Done creating infrastructure with Terraform"
-
-            '''
-          }
+        when {      
+            expression {
+                return env.BRANCH_NAME != 'main';
+            }
         }
-      }
+        steps {
+            container('terraform') {
+                dir(path: "terraform") {
+                    sh '''
+
+                    echo ""
+                    terraform version
+
+                    echo ""
+                    echo "Initializing Terraform (backend: S3)"
+                    terraform init -backend-config=backend.hcl
+
+                    echo ""
+                    echo "Validating Terraform"
+                    terraform validate
+
+                    echo ""
+                    echo "Planning Terraform"
+                    terraform plan -out=tfplan
+
+                    echo ""
+                    echo "Applying Terraform"
+                    terraform apply -auto-approve tfplan
+
+                    echo ""
+                    echo "Showing Terraform state"
+                    terraform show
+
+                    echo ""
+                    echo "Getting instance ID"  
+                    terraform output "instance_id" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
+                    cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
+
+
+                    echo ""
+                    echo "Getting instance public IP"  
+                    terraform output "instance_public_ip" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+                    cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+
+
+
+                    echo ""
+                    echo "Done creating infrastructure with Terraform"
+
+                    '''
+                }
+            }
+        }
     }
 
 // "running"
-    stage('Make sure EC2 instance is up') {
-      steps {
-        container('aws') {
-          sh '''
-            echo "Retrieving EC2 instance IDs from shared data volume ..."
-            INSTANCE_IDS=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS)
-            INSTANCE_REGION="us-east-2"
-
-            echo "Restarting EC2 instances ..."
-            aws ec2 start-instances --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
-
-            echo ""
-            echo "Checking EC2 instance status ..."
-            aws ec2 describe-instance-status \
-            --query "InstanceStatuses[0].InstanceState.Name" \
-            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs
-
-            echo ""
-            
-            until [[ "$(aws ec2 describe-instance-status \
-            --query "InstanceStatuses[0].InstanceState.Name" \
-            --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs)" = "running" ]] ; do
-                echo "Waiting for EC2 instance to be up ..."
-              sleep 1
-            done 
-          '''
+    stage('AWS: Make sure EC2 instance is up') {
+        when {      
+            expression {
+                return env.BRANCH_NAME != 'master';
+            }
         }
-      }
+        steps {
+            container('aws') {
+                sh '''
+                    echo "Retrieving EC2 instance IDs from shared data volume ..."
+                    INSTANCE_IDS=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS)
+                    INSTANCE_REGION="us-east-2"
+
+                    echo "Restarting EC2 instances ..."
+                    aws ec2 start-instances --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
+
+                    echo ""
+                    echo "Checking EC2 instance status ..."
+                    aws ec2 describe-instance-status \
+                    --query "InstanceStatuses[0].InstanceState.Name" \
+                    --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs
+
+                    echo ""
+                    
+                    until [[ "$(aws ec2 describe-instance-status \
+                        --query "InstanceStatuses[0].InstanceState.Name" \
+                        --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs)" = "running" ]] ; 
+                    do
+                        echo "Waiting for EC2 instance to be up ..."
+                        sleep 1
+                    done 
+            '''
+            }
+        }
     }
                 //   aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
 
                     //   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
                     //   unzip awscliv2.zip && \
                     //   sudo ./aws/install
-    stage ("Deploy Code to EC2 Inatance"){
+    stage ("SSH: Deploy Code to EC2 Inatance"){
     //    when {
     //     branch 'main-1'
     //   }
@@ -295,24 +305,24 @@ pipeline {
 
                     echo ""
                     echo "Running docker-compose.yaml on EC2 instance"
-                  ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
+                    ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
 
                     echo ""
                     echo "Checking if Docker is installed"
                     if [[ "$(which docker)" != "" && "$(docker --version)" != "" ]]; then
-                        echo "TODO: check if Docker is installed"
-
+                        echo "Docker is installed"
+                    else
+                        echo "Installing Docker ..."
+                        sudo apt update
+                        sudo apt -y install docker.io 
+                        sudo apt -y install docker-compose
+                        sudo apt -y install curl unzip 
                     fi
          
-                    sudo apt update
-                    sudo apt -y install docker.io 
-                    sudo apt -y install docker-compose
-                    sudo apt -y install curl unzip 
-
-                    echo ""
-                    echo "Waiting for Docker daemon to be up ..."
+                    echo "" 
                     until sudo docker version &> /dev/null; do
-                    sleep 1
+                        echo "Waiting for Docker daemon to be up ..."
+                        sleep 1
                     done
                     echo "Docker daemon is up!"
 
@@ -321,7 +331,7 @@ pipeline {
                     sudo docker-compose -f test/docker-compose.yaml pull
                     sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
                     sudo docker-compose -f test/docker-compose.yaml ps
-                    yes | sudo docker image prune
+                    sudo docker image prune --force --all
                     """
                 '''
 
