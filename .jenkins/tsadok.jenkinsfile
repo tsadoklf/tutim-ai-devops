@@ -135,7 +135,7 @@ pipeline {
             ls -l
             cat $KUBECONFIG
 
-            kubectl get ns
+            kubectl get ns --kubeconfig $KUBECONFIG
           '''
         }
       }
