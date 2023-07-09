@@ -127,6 +127,8 @@ pipeline {
         container('aws') {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+
+            yum update -y && yum install -y openssl jq 
             
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
                     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
@@ -151,7 +153,7 @@ pipeline {
 
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
 
-            yum update -y && yum install -y openssl jq 
+
 
             NAMESPACE="hello-world"
 
