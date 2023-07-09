@@ -194,11 +194,11 @@ pipeline {
             echo ""
             echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
             echo "-----------------------------------------------------------"
-            helm upgrade $CHART_NAME \
+            helm upgrade $CHART_NAME $CHART_REPO \
                 --install $RELEASE_NAME \
                 --namespace $NAMESPACE \
-                --kubeconfig $KUBECONFIG \
-                $CHART_REPO
+                --kubeconfig $KUBECONFIG
+                
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
