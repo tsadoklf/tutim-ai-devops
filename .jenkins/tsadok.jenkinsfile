@@ -136,8 +136,6 @@ pipeline {
             ls -la
             K8S_DIR=".k8s/hello-world"
 
-            | kubectl create -f -
-
             kubectl apply -f $K8S_DIR/0-namespace.yaml  --kubeconfig $KUBECONFIG
 
             NAMESPACE="app"
