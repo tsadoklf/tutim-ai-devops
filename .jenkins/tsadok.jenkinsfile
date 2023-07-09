@@ -180,6 +180,8 @@ pipeline {
 
             NAMESPACE="hello-world"
 
+            kubectl create namespace $NAMESPACE --kubeconfig $KUBECONFIG
+
             echo ""
             echo "Using Helm to installing another version of Hello-World"
             echo "-----------------------------------------------------------"
