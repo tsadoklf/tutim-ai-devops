@@ -103,7 +103,7 @@ pipeline {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
-            yum update -y && yum install -y git openssl jq 
+            yum update -y && yum install -y git tar openssl jq 
             
             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
                     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
