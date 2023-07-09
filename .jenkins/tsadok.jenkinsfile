@@ -175,10 +175,13 @@ pipeline {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
+            ls -la
+            ls -l helm
+
             NAMESPACE="hello-world"
 
             echo ""
-            echo "Installing another version of Hello-World in namespace $NAMESPACE using helm"
+            echo "Using Helm to installing another version of Hello-World"
             echo "-----------------------------------------------------------"
 
             RELEASE_NAME="hello-world"
