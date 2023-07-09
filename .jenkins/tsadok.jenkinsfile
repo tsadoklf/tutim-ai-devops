@@ -179,7 +179,7 @@ pipeline {
             SERVICE_NAME="ingress-nginx-controller "
 
             # Get the external IP/hostname
-            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            HOST_NAME=\$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
             echo "HOST_NAME: $HOST_NAME"
 
             if [ "${env.BRANCH_NAME}" == "main" ]; then
