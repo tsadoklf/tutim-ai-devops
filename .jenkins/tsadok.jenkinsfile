@@ -134,8 +134,8 @@ pipeline {
             kubectl get ns --kubeconfig $KUBECONFIG
 
             ls -la
-            K8S_DIR="./k8s/hello-world"
-            
+            K8S_DIR=".k8s/hello-world"
+
             kubectl get apply -f $K8S_DIR/0-namespace.yaml  --kubeconfig $KUBECONFIG
             kubectl get apply -f $K8S_DIR/0-service.yaml    --kubeconfig $KUBECONFIG
             kubectl get apply -f $K8S_DIR/0-deployment.yaml --kubeconfig $KUBECONFIG
