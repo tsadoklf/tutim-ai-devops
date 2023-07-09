@@ -151,6 +151,8 @@ pipeline {
 
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
 
+            yum update -y && yum install -y openssl jq 
+
             NAMESPACE="hello-world"
 
             echo ""
