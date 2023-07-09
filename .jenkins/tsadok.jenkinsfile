@@ -227,7 +227,7 @@ pipeline {
                 --namespace $NAMESPACE \
                 --kubeconfig $KUBECONFIG \
                 --set ingress.hosts[0].host=$HOST_NAME \
-                --set ingress.hosts[0].paths[0].path=/frontend(/|$)(.*) \
+                --set ingress.hosts[0].paths[0].path="/frontend(/|$)(.*)" \
                 --set ingress.hosts[0].paths[0].pathType=Prefix \
                 --set ingress.hosts[0].paths[0].backend.service.name=frontend \
                 --set ingress.hosts[0].paths[0].backend.service.port.number=80 \
