@@ -169,11 +169,14 @@ pipeline {
       }
     }
 
+
     stage('EKS: Deploy App ') {
       steps {
         container('aws') {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+
+
 
             NAMESPACE="nginx"
             SERVICE_NAME="ingress-nginx-controller "
@@ -193,6 +196,17 @@ pipeline {
                 FRONTEND_ENDPOINT="ai-frontend-staging"
                 FRONTEND_REPLICAS=1
             fi
+
+            SECRET_NAME="ecr-credentials"
+            
+            DOCKER_USERNAME="AWS"
+            DOCKER_PASSWORD=$(cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE)
+
+            kubectl create secret docker-registry $SECRET_NAME \
+                --docker-server=$REGISTRY \
+                --docker-username=$DOCKER_USERNAME \
+                --docker-password=$DOCKER_PASSWORD \
+                --namespace=$NAMESPACE
 
             RELEASE_NAME="upes-ai-bot"
             CHART_NAME="upes-ai-bot"
