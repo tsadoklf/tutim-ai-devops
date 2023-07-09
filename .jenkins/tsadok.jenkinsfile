@@ -213,9 +213,6 @@ pipeline {
                 --set ingress.hosts[0].host=$HOST_NAME \
                 --set replicaCount=3
                 
-                // --set image.repository=ghcr.io/infrastructure-as-code/hello-world \
-                // --set image.tag=latest
-                
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
 
@@ -230,9 +227,7 @@ pipeline {
                 --set ingress.annotations."nginx.ingress.kubernetes.io/backend-protocol"=HTTPS \
                 --set ingress.hosts[0].host=$HOST_NAME \
                 --set ingress.hosts[0].paths[0].path="/portainer"
-
                 
-
           '''
         }
       }
