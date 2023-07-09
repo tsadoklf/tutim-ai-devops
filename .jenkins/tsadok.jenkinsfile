@@ -196,9 +196,9 @@ pipeline {
             echo "-----------------------------------------------------------"
             helm upgrade $CHART_NAME \
                 --install $RELEASE_NAME \
-                --repo $CHART_REPO \
                 --namespace $NAMESPACE \
-                --kubeconfig $KUBECONFIG 
+                --kubeconfig $KUBECONFIG \
+                $CHART_REPO
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
@@ -206,6 +206,7 @@ pipeline {
       }
     }
     // --values $VALUES_FILE
+    //            --repo $CHART_REPO \
 
     stage('Docker: Check Daemon Is Up') {
         steps {
