@@ -195,7 +195,7 @@ pipeline {
             echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
             echo "-----------------------------------------------------------"
             helm upgrade $CHART_NAME $CHART_REPO \
-                --install $RELEASE_NAME \
+                --install \
                 --namespace $NAMESPACE \
                 --kubeconfig $KUBECONFIG
                 
