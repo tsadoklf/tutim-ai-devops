@@ -132,6 +132,16 @@ pipeline {
                     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
             kubectl get ns --kubeconfig $KUBECONFIG
+
+            ls -la
+            K8S_DIR="./k8s/hello-world"
+            
+            kubectl get apply -f $K8S_DIR/0-namespace.yaml  --kubeconfig $KUBECONFIG
+            kubectl get apply -f $K8S_DIR/0-service.yaml    --kubeconfig $KUBECONFIG
+            kubectl get apply -f $K8S_DIR/0-deployment.yaml --kubeconfig $KUBECONFIG
+            kubectl get apply -f $K8S_DIR/0-hpa.yaml        --kubeconfig $KUBECONFIG
+            kubectl get apply -f $K8S_DIR/0-ingress.yaml    --kubeconfig $KUBECONFIG
+
           '''
         }
       }
