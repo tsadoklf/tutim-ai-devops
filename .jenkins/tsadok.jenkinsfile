@@ -130,10 +130,12 @@ pipeline {
       steps {
         container('kubectl') {
           sh '''
-            KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
             pwd
             ls -l
             cat $KUBECONFIG
+
+            kubectl get ns
           '''
         }
       }
