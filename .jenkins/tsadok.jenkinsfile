@@ -188,7 +188,7 @@ pipeline {
 
             RELEASE_NAME="hello-world"
             CHART_NAME="hello-world"
-            CHART_REPO="file:///helm/hello-world"
+            CHART_REPO="./helm/hello-world"
             VALUES_FILE="k8s-install-jenkins-helm-values.yaml"
 
             echo ""
