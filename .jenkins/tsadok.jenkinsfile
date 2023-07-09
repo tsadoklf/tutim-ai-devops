@@ -210,7 +210,10 @@ pipeline {
                 --kubeconfig $KUBECONFIG \
                 --set ingress.hosts[0].paths[0].path=/helm-hello-world \
                 --set ingress.hosts[0].paths[0].pathType=Prefix \
-                --set ingress.hosts[0].host=$HOST_NAME
+                --set ingress.hosts[0].host=$HOST_NAME \
+                --set replicaCount=3 \
+                --set image.repository=ghcr.io/infrastructure-as-code/hello-world \
+                --set image.tag=latest
                 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
