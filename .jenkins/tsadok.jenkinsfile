@@ -197,7 +197,8 @@ pipeline {
             helm upgrade $CHART_NAME $CHART_REPO \
                 --install \
                 --namespace $NAMESPACE \
-                --kubeconfig $KUBECONFIG
+                --kubeconfig $KUBECONFIG \
+                --set ingress.hosts[0].host=aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com
                 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
