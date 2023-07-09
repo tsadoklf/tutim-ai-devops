@@ -309,7 +309,7 @@ pipeline {
 
                     echo ""
                     echo "Checking if Docker is installed"
-                    if [[ "$(which docker)" != "" && "$(docker --version)" != "" ]]; then
+                     if docker version 2>/dev/null | grep -q Version; then
                         echo "Docker is installed"
                     else
                         echo "Installing Docker ..."
