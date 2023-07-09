@@ -200,6 +200,10 @@ pipeline {
                 FRONTEND_REPLICAS=1
             fi
 
+            NAMESPACE="app-production"
+            FRONTEND_ENDPOINT="ai-frontend"
+            FRONTEND_REPLICAS=3
+
             SECRET_NAME="ecr-credentials"
             DOCKER_USERNAME="AWS"            
             kubectl create secret docker-registry $SECRET_NAME \
@@ -224,17 +228,15 @@ pipeline {
                 --kubeconfig $KUBECONFIG \
                 --set ingress.hosts[0].paths[0].path=/$FRONTEND_ENDPOINT \
                 --set ingress.hosts[0].paths[0].pathType=Prefix \
-                --set ingress.hosts[0].host=$HOST_NAME
-
+                --set ingress.hosts[0].host=$HOST_NAME \
+                --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
+                --set services.frontend.replicas.max=$FRONTEND_REPLICAS 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
         }
       }
     }
-
-                //     --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
-                // --set services.frontend.replicas.max=$FRONTEND_REPLICAS 
 
     stage('EKS: Deploy Hello-World using Helm') {
       steps {
