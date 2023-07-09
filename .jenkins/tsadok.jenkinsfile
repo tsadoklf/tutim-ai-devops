@@ -172,7 +172,7 @@ pipeline {
     stage('EKS: Deploy App ') {
       steps {
         container('aws') {
-          sh '''
+          sh """
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
             NAMESPACE="nginx"
@@ -211,7 +211,7 @@ pipeline {
                 --set services.frontend.replicas.max=$FRONTEND_REPLICAS 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
-          '''
+          """
         }
       }
     }
