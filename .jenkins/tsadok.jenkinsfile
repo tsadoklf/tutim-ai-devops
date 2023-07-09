@@ -206,7 +206,7 @@ pipeline {
                 --docker-server=$REGISTRY \
                 --docker-username=$DOCKER_USERNAME \
                 --docker-password=$DOCKER_PASSWORD \
-                --namespace=$NAMESPACE
+                --namespace=$NAMESPACE || true
 
             RELEASE_NAME="upes-ai-bot"
             CHART_NAME="upes-ai-bot"
