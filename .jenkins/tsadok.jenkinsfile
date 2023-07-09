@@ -136,11 +136,18 @@ pipeline {
             ls -la
             K8S_DIR=".k8s/hello-world"
 
-            kubectl get apply -f $K8S_DIR/0-namespace.yaml  --kubeconfig $KUBECONFIG
-            kubectl get apply -f $K8S_DIR/0-service.yaml    --kubeconfig $KUBECONFIG
-            kubectl get apply -f $K8S_DIR/0-deployment.yaml --kubeconfig $KUBECONFIG
-            kubectl get apply -f $K8S_DIR/0-hpa.yaml        --kubeconfig $KUBECONFIG
-            kubectl get apply -f $K8S_DIR/0-ingress.yaml    --kubeconfig $KUBECONFIG
+            | kubectl create -f -
+
+            kubectl apply -f $K8S_DIR/0-namespace.yaml  --kubeconfig $KUBECONFIG
+
+            NAMESPACE="app"
+
+            kubectl apply -f $K8S_DIR/1-service.yaml    -n $NAMESPACE --kubeconfig $KUBECONFIG
+            kubectl apply -f $K8S_DIR/2-deployment.yaml -n $NAMESPACE --kubeconfig $KUBECONFIG
+            kubectl apply -f $K8S_DIR/3-hpa.yaml        -n $NAMESPACE --kubeconfig $KUBECONFIG
+            kubectl apply -f $K8S_DIR/4-ingress.yaml    -n $NAMESPACE --kubeconfig $KUBECONFIG
+
+            kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
 
           '''
         }
