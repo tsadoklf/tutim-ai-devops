@@ -117,10 +117,6 @@ pipeline {
             KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
             aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION --kubeconfig $KUBECONFIG
-
-            pwd
-            ls -l
-            cat $KUBECONFIG
           '''
         }
       }
@@ -131,11 +127,8 @@ pipeline {
         container('aws') {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
-            pwd
-            ls -l
-            cat $KUBECONFIG
-
-             curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+            
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
                     install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
             kubectl get ns --kubeconfig $KUBECONFIG
