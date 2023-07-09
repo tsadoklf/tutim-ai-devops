@@ -198,6 +198,8 @@ pipeline {
                 --install \
                 --namespace $NAMESPACE \
                 --kubeconfig $KUBECONFIG \
+                --set ingress.hosts[0].paths[0].path=/hello \
+                --set ingress.hosts[0].paths[0].pathType=Prefix \
                 --set ingress.hosts[0].host=aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com
                 
             
