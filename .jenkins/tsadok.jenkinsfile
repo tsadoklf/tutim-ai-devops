@@ -198,7 +198,7 @@ pipeline {
                 --install $RELEASE_NAME \
                 --repo $CHART_REPO \
                 --namespace $NAMESPACE \
-                --kubecontext $KUBECONFIG 
+                --kubeconfig $KUBECONFIG 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
