@@ -118,6 +118,8 @@ pipeline {
 
             aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION --kubeconfig $KUBECONFIG
 
+            pwd
+            ls -l
             cat $KUBECONFIG
           '''
         }
@@ -128,6 +130,7 @@ pipeline {
       steps {
         container('kubectl') {
           sh '''
+            pwd
             ls -l
             cat KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
           '''
