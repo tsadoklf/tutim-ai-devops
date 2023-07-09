@@ -169,6 +169,53 @@ pipeline {
       }
     }
 
+    stage('EKS: Deploy App ') {
+      steps {
+        container('aws') {
+          sh '''
+            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+
+            NAMESPACE="nginx"
+            SERVICE_NAME="ingress-nginx-controller "
+
+            # Get the external IP/hostname
+            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            echo "HOST_NAME: $HOST_NAME"
+
+            if [ "${env.BRANCH_NAME}" == "main" ]; then
+                NAMESPACE="app-production"
+                FRONTEND_ENDPOINT="ai-frontend"
+                FRONTEND_REPLICAS=3
+            else
+                NAMESPACE="app-staging"
+                FRONTEND_ENDPOINT="ai-frontend-staging"
+                FRONTEND_REPLICAS=1
+            fi
+
+            RELEASE_NAME="upes-ai-bot"
+            CHART_NAME="upes-ai-bot"
+            CHART_REPO="./helm/upes-ai-bot"
+            
+            echo ""
+            echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
+            echo "-----------------------------------------------------------"
+            helm upgrade $CHART_NAME $CHART_REPO \
+                --install \
+                --create-namespace \
+                --namespace $NAMESPACE \
+                --kubeconfig $KUBECONFIG \
+                --set ingress.hosts[0].paths[0].path=/$FRONTEND_ENDPOINT \
+                --set ingress.hosts[0].paths[0].pathType=Prefix \
+                --set ingress.hosts[0].host=$HOST_NAME \
+                --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
+                --set services.frontend.replicas.max=$FRONTEND_REPLICAS 
+            
+            kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
+          '''
+        }
+      }
+    }
+
     stage('EKS: Deploy Hello-World using Helm') {
       steps {
         container('aws') {
@@ -199,8 +246,6 @@ pipeline {
             CHART_REPO="./helm/hello-world"
             VALUES_FILE="k8s-install-jenkins-helm-values.yaml"
 
-
-
             echo ""
             echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
             echo "-----------------------------------------------------------"
@@ -214,6 +259,23 @@ pipeline {
                 --set replicaCount=3                
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
+          '''
+        }
+      }
+    }
+
+    stage('EKS: Deploy Portainer') {
+      steps {
+        container('aws') {
+          sh '''
+            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
+
+            NAMESPACE="nginx"
+            SERVICE_NAME="ingress-nginx-controller "
+
+            # Get the external IP/hostname
+            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            echo "HOST_NAME: $HOST_NAME"
 
             helm repo add portainer https://portainer.github.io/k8s/
             helm repo update
