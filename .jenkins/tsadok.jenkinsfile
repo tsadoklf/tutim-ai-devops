@@ -162,7 +162,6 @@ pipeline {
       }
     }
 
-
     stage('EKS: Deploy Hello-World using kubectl tool') {
       steps {
         container('aws') {
@@ -195,23 +194,10 @@ pipeline {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
-            NAMESPACE="nginx"
-            SERVICE_NAME="ingress-nginx-controller"
-
-            echo "Getting the external-IP (hostname) ..."
-            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            echo "HOST_NAME: $HOST_NAME"
-
-
-            ls -la
-            ls -l helm
-
             NAMESPACE="hello-world"
 
-            kubectl create namespace $NAMESPACE --kubeconfig $KUBECONFIG || true
-
             echo ""
-            echo "Using Helm to installing another version of Hello-World"
+            echo "Using Helm to install Hello-World to namespace '$NAMESPACE'"
             echo "-----------------------------------------------------------"
 
             RELEASE_NAME="hello-world"
@@ -224,12 +210,13 @@ pipeline {
             echo "-----------------------------------------------------------"
             helm upgrade $CHART_NAME $CHART_REPO \
                 --install \
+                --create-namespace \
                 --namespace $NAMESPACE \
                 --kubeconfig $KUBECONFIG \
                 --set ingress.hosts[0].paths[0].path=/helm-hello-world \
                 --set ingress.hosts[0].paths[0].pathType=Prefix \
                 --set ingress.hosts[0].host=$HOST_NAME \
-                --set replicaCount=3                
+                --set deployment.replicas=3 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
