@@ -283,6 +283,8 @@ pipeline {
                 --set services.backend.replicas.min=3 \
                 --set services.backend.replicas.max=3 \
                 --set providerCredentials.telegramBotToken=$TELEGRAM_BOT_TOKEN 
+
+          
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
