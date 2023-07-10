@@ -233,14 +233,7 @@ pipeline {
 
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
-            NAMESPACE="nginx"
-            SERVICE_NAME="ingress-nginx-controller "
-
-            # Get the external IP/hostname
-            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            echo "HOST_NAME: $HOST_NAME"
-
-            echo BRANCH_NAME: $BRANCH_NAME
+            echo BRANCH_NAME: ${BRANCH_NAME}
 
             if [ "$BRANCH_NAME" == "main" ]; then
                 NAMESPACE="app-production"
@@ -284,7 +277,9 @@ pipeline {
                 --set ingress.hosts[0].paths[0].backend.service.name=frontend \
                 --set ingress.hosts[0].paths[0].backend.service.port.number=80 \
                 --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
-                --set services.frontend.replicas.max=$FRONTEND_REPLICAS 
+                --set services.frontend.replicas.max=$FRONTEND_REPLICAS \
+                --set services.backend.replicas.min=3 \
+                --set services.backend.replicas.max=3\
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
