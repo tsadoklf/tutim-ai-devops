@@ -249,6 +249,8 @@ pipeline {
             FRONTEND_ENDPOINT="ai-frontend"
             FRONTEND_REPLICAS=3
 
+            TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
+
             SECRET_NAME="ecr-credentials"
             DOCKER_USERNAME="AWS"            
             kubectl create secret docker-registry $SECRET_NAME \
@@ -279,7 +281,8 @@ pipeline {
                 --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
                 --set services.frontend.replicas.max=$FRONTEND_REPLICAS \
                 --set services.backend.replicas.min=3 \
-                --set services.backend.replicas.max=3\
+                --set services.backend.replicas.max=3 \
+                --set providerCredentials.telegramBotToken=$TELEGRAM_BOT_TOKEN 
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
