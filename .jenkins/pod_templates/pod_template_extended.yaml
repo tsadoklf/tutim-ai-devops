@@ -6,6 +6,9 @@ spec:
     image: dtzar/helm-kubectl:latest
     command: ["sh"]
     tty: true
+    volumeMounts:     
+      - name: shared-data
+        mountPath: /mnt/shared-data      
 
   - name: terraform
     image: hashicorp/terraform:latest
