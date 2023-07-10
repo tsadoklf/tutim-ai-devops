@@ -280,8 +280,8 @@ pipeline {
                 --set ingress.hosts[0].paths[0].backend.service.port.number=80 \
                 --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
                 --set services.frontend.replicas.max=$FRONTEND_REPLICAS \
-                --set services.backend.replicas.min=3 \
-                --set services.backend.replicas.max=3 \
+                --set services.backend.replicas.min=1 \
+                --set services.backend.replicas.max=1 \
                 --set providerCredentials.telegramBotToken=$TELEGRAM_BOT_TOKEN 
 
           
