@@ -271,7 +271,7 @@ pipeline {
             FRONTEND_ENDPOINT="ai-frontend"
             FRONTEND_REPLICAS=3
 
-            case "\${env.JOB_NAME}" in 
+            case "$JOB_NAME" in 
               'tutim-ai-main')
                 export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
                 ;;
