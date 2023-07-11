@@ -98,23 +98,7 @@ pipeline {
             echo "env.JOB_NAME: ${env.JOB_NAME}"
             echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
             echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
-
-            script {
-              switch("${env.JOB_NAME}") {
-                case 'tutim-ai-main':
-                  sh '''
-                      export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
-                  '''
-                  break
-                case 'tutim-ai-dev':
-                  sh '''
-                      export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
-                  '''
-                  break
-              }
-            }
-            
-            
+      
         }
       }
     }  
@@ -287,7 +271,18 @@ pipeline {
             FRONTEND_ENDPOINT="ai-frontend"
             FRONTEND_REPLICAS=3
 
-            
+            case "${env.JOB_NAME}" in 
+              'tutim-ai-main')
+                export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
+                ;;
+              'tutim-ai-dev')
+                export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
+                ;;
+              *)
+                echo "Unknown JOB_NAME: ${env.JOB_NAME}"
+                exit 1
+                ;;
+            esac
 
             SECRET_NAME="ecr-credentials"
             DOCKER_USERNAME="AWS"            
