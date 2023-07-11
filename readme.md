@@ -35,5 +35,5 @@ Following steps would be followed in order to create a CI/CD pipeline using Jenk
 
 #### EASY!
 <br>
-<img src="C:\Users\himan\Pictures\seqdiag.png">
+<img src="/seqdiag.png">
 <br>
