@@ -90,9 +90,30 @@ pipeline {
     stage('Git: Clone Code') {
       steps {
         container('maven') {
-          git branch: 'main', changelog: false, poll: false, 
+          git branch: 'main', 
+            changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
+
+            echo "env.JOB_NAME: ${env.JOB_NAME}"
+            echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
+
+            script {
+              switch("${env.JOB_NAME}") {
+                case 'tutim-ai-main':
+                  sh '''
+                      export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
+                  '''
+                  break
+                case 'tutim-ai-dev':
+                  sh '''
+                      export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
+                  '''
+                  break
+              }
+            }
+            
+            
         }
       }
     }  
@@ -117,7 +138,6 @@ pipeline {
         }
       }
     }
-
 
     stage('AWS: Get ECR Token') {
       steps {
@@ -144,7 +164,9 @@ pipeline {
       }
     }
 
-     stage('EKS: Get Load Balancer Hostname') {
+  
+
+    stage('EKS: Get Load Balancer Hostname') {
       steps {
         container('aws') {
           sh '''
@@ -163,6 +185,11 @@ pipeline {
     }
 
     stage('EKS: Deploy Hello-World using kubectl tool') {
+      when {      
+          expression {
+              return env.JOB_NAME == 'tutim-ai-hello-world';
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -189,6 +216,11 @@ pipeline {
     }
 
     stage('EKS: Deploy Hello-World using Helm') {
+      when {      
+          expression {
+              return env.JOB_NAME == 'tutim-ai-hello-world';
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -224,7 +256,12 @@ pipeline {
       }
     }
 
-    stage('EKS: Deploy App ') {
+    stage('EKS: Deploy App to EKS using Helm') {
+      when {      
+          expression {
+              return env.JOB_NAME == 'tutim-ai-main';
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -233,14 +270,7 @@ pipeline {
 
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
-            NAMESPACE="nginx"
-            SERVICE_NAME="ingress-nginx-controller "
-
-            # Get the external IP/hostname
-            HOST_NAME=$(kubectl get service -n $NAMESPACE $SERVICE_NAME -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-            echo "HOST_NAME: $HOST_NAME"
-
-            echo BRANCH_NAME: $BRANCH_NAME
+            echo BRANCH_NAME: ${BRANCH_NAME}
 
             if [ "$BRANCH_NAME" == "main" ]; then
                 NAMESPACE="app-production"
@@ -255,6 +285,8 @@ pipeline {
             NAMESPACE="app-production"
             FRONTEND_ENDPOINT="ai-frontend"
             FRONTEND_REPLICAS=3
+
+            
 
             SECRET_NAME="ecr-credentials"
             DOCKER_USERNAME="AWS"            
@@ -284,7 +316,12 @@ pipeline {
                 --set ingress.hosts[0].paths[0].backend.service.name=frontend \
                 --set ingress.hosts[0].paths[0].backend.service.port.number=80 \
                 --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
-                --set services.frontend.replicas.max=$FRONTEND_REPLICAS 
+                --set services.frontend.replicas.max=$FRONTEND_REPLICAS \
+                --set services.backend.replicas.min=1 \
+                --set services.backend.replicas.max=1 \
+                --set providerCredentials.telegramBotToken=$TELEGRAM_BOT_TOKEN 
+
+          
             
             kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
           '''
@@ -294,6 +331,11 @@ pipeline {
 
 
     stage('EKS: Deploy Portainer') {
+      when {      
+          expression {
+              return false;
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -468,10 +510,11 @@ pipeline {
                     //   unzip awscliv2.zip && \
                     //   sudo ./aws/install
     stage ("SSH: Deploy Code to EC2 Inatance"){
-    //    when {
-    //     branch 'main-1'
-    //   }
-    // if docker version &> /dev/null; then
+      when {      
+          expression {
+              return env.JOB_NAME == 'tutim-ai-dev';
+          }
+      }
       steps{
         container('terraform') {
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
