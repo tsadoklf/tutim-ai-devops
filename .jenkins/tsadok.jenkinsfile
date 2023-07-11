@@ -98,17 +98,19 @@ pipeline {
             echo "env.JOB_NAME: ${env.JOB_NAME}"
             echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
 
-            switch("${env.JOB_NAME}") {
-              case 'tutim-ai-main':
-                sh '''
-                    export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
-                '''
-                break
-              case 'tutim-ai-dev':
-                sh '''
-                    export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
-                '''
-                break
+            script {
+              switch("${env.JOB_NAME}") {
+                case 'tutim-ai-main':
+                  sh '''
+                      export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
+                  '''
+                  break
+                case 'tutim-ai-dev':
+                  sh '''
+                      export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
+                  '''
+                  break
+              }
             }
             
             
