@@ -165,7 +165,7 @@ pipeline {
     stage('EKS: Deploy Hello-World using kubectl tool') {
       when {      
           expression {
-              return env.JOB_NAME != 'tutim-ai-hello-world';
+              return env.JOB_NAME == 'tutim-ai-hello-world';
           }
       }
       steps {
@@ -198,7 +198,7 @@ pipeline {
     stage('EKS: Deploy Hello-World using Helm') {
       when {      
           expression {
-              return env.JOB_NAME != 'tutim-ai-hello-world';
+              return env.JOB_NAME == 'tutim-ai-hello-world';
           }
       }
       steps {
@@ -239,7 +239,7 @@ pipeline {
     stage('EKS: Deploy App to EKS using Helm') {
       when {      
           expression {
-              return env.JOB_NAME != 'tutim-ai-main';
+              return env.JOB_NAME == 'tutim-ai-main';
           }
       }
       steps {
@@ -492,7 +492,7 @@ pipeline {
     stage ("SSH: Deploy Code to EC2 Inatance"){
       when {      
           expression {
-              return env.JOB_NAME != 'tutim-ai-dev';
+              return env.JOB_NAME == 'tutim-ai-dev';
           }
       }
       steps{
