@@ -94,6 +94,24 @@ pipeline {
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
+
+            echo "env.JOB_NAME: ${env.JOB_NAME}"
+            echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
+
+            switch("${env.JOB_NAME}") {
+              case 'tutim-ai-main':
+                sh '''
+                    export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
+                '''
+                break
+              case 'tutim-ai-dev':
+                sh '''
+                    export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
+                '''
+                break
+            }
+            
+            
         }
       }
     }  
@@ -144,6 +162,8 @@ pipeline {
       }
     }
 
+  
+
     stage('EKS: Get Load Balancer Hostname') {
       steps {
         container('aws') {
@@ -192,8 +212,6 @@ pipeline {
         }
       }
     }
-
-    
 
     stage('EKS: Deploy Hello-World using Helm') {
       when {      
@@ -266,7 +284,7 @@ pipeline {
             FRONTEND_ENDPOINT="ai-frontend"
             FRONTEND_REPLICAS=3
 
-            TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
+            
 
             SECRET_NAME="ecr-credentials"
             DOCKER_USERNAME="AWS"            
