@@ -97,6 +97,7 @@ pipeline {
 
             echo "env.JOB_NAME: ${env.JOB_NAME}"
             echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
+            echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
 
             script {
               switch("${env.JOB_NAME}") {
