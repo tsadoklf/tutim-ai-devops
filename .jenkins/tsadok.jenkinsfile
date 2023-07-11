@@ -90,8 +90,7 @@ pipeline {
     stage('Git: Clone Code') {
       steps {
         container('maven') {
-          git 
-            branch: 'main', 
+          git branch: 'main', 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
