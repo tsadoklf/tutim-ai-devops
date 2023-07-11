@@ -90,7 +90,9 @@ pipeline {
     stage('Git: Clone Code') {
       steps {
         container('maven') {
-          git branch: 'main', changelog: false, poll: false, 
+          git 
+            branch: 'main', 
+            changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
         }
@@ -118,7 +120,6 @@ pipeline {
       }
     }
 
-
     stage('AWS: Get ECR Token') {
       steps {
         container('aws') {
@@ -144,7 +145,7 @@ pipeline {
       }
     }
 
-     stage('EKS: Get Load Balancer Hostname') {
+    stage('EKS: Get Load Balancer Hostname') {
       steps {
         container('aws') {
           sh '''
@@ -163,6 +164,11 @@ pipeline {
     }
 
     stage('EKS: Deploy Hello-World using kubectl tool') {
+      when {      
+          expression {
+              return env.JOB_NAME != 'tutim-ai-hello-world';
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -188,7 +194,14 @@ pipeline {
       }
     }
 
+    
+
     stage('EKS: Deploy Hello-World using Helm') {
+      when {      
+          expression {
+              return env.JOB_NAME != 'tutim-ai-hello-world';
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -224,7 +237,12 @@ pipeline {
       }
     }
 
-    stage('EKS: Deploy App ') {
+    stage('EKS: Deploy App to EKS using Helm') {
+      when {      
+          expression {
+              return env.JOB_NAME != 'tutim-ai-main';
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -294,6 +312,11 @@ pipeline {
 
 
     stage('EKS: Deploy Portainer') {
+      when {      
+          expression {
+              return false;
+          }
+      }
       steps {
         container('aws') {
           sh '''
@@ -468,10 +491,11 @@ pipeline {
                     //   unzip awscliv2.zip && \
                     //   sudo ./aws/install
     stage ("SSH: Deploy Code to EC2 Inatance"){
-    //    when {
-    //     branch 'main-1'
-    //   }
-    // if docker version &> /dev/null; then
+      when {      
+          expression {
+              return env.JOB_NAME != 'tutim-ai-dev';
+          }
+      }
       steps{
         container('terraform') {
           withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
