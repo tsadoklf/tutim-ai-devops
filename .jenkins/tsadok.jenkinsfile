@@ -104,7 +104,7 @@ pipeline {
             printenv
           """
 
-          git branch: "dev", 
+          git branch: "main", 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
