@@ -106,7 +106,7 @@ pipeline {
 
           // sh "echo GIT_BRANCH_SHORT: ${GIT_BRANCH_SHORT}"
 
-          git branch: "${GIT_BRANCH_SHORT}", 
+          git branch: "${env.GIT_BRANCH_SHORT}", 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
