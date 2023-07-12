@@ -3,6 +3,7 @@
 ## Present TutimAI
 1. The foundation of a new start-up that wants to bring JOY to people
 2. What are TUTIM? Why TutimAI (fresh, sweet, joyful, healthy)
+3. 
 
 ## The Application - Part 1 
 ### (object detection (ML): frontend + yolo5 + mongodb)
@@ -36,11 +37,14 @@ Use 2 types of infrastrctures
 
 Cloud: AWS 
 
-Automation: Jenkins (deployed on Kubernetes, agents are pods)
-Tools: 
-1. AWS CLI (interact with AWS), 
-2. kubectl (interact with Kubernetes), 
-3. Helm (deploy to Kubernetes)
+## Automation: 
+We use Jenkins, deployed on Kubernetes. The agents are pods which have containers with the required tools:
+
+1. AWS CLI for interacting with AWS, 
+2. Docker for building, tagging and pushing docker images
+2. kubectl for interacting with Kubernetes, 
+3. Helm for deploying to Kubernetes)
+4. Terraform for provisioning infrastructure - IaC (Infrastructure-as-Code)
 
 ### Present CI/CD Part 1 (Jenkins/Kubectl/Helm - Hello-World)
 Deploy Hello-World application to Kubernetes (kubectl and Helm)
