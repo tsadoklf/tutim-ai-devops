@@ -1,6 +1,6 @@
 # TutimAI
 
-## Present TutimAI
+## Present TutimAI StartUp
 1. The foundation of a new start-up that wants to bring JOY to people
 2. What are TUTIM? Why TutimAI (fresh, sweet, joyful, healthy)
 3. 
@@ -13,7 +13,7 @@
 4. Show sequence diagram
 
 ## The Application - Part 2 
-### (object detection (AI): Telegram + yolo5 + mongodb + OpenAI ChatGPT)
+### (object detection (AI): Telegram + yolo5 + mongodb + Slack + OpenAI ChatGPT)
 Same as above
 
 ## The Application - Part 3
@@ -21,7 +21,10 @@ Same as above
 Same as above
 
 ## The Technology Stack
-### Application: 
+
+### Source Code Management - SCM
+We use **GitHub** 
+### Programming Languages: 
 python micro-services
 
 ### Container Technology
@@ -30,21 +33,22 @@ Docker
 ### Orchestration Technology
 Docker-Compose and Kubernetes
 
-## Deployment
+### Deployment
 Use 2 types of infrastrctures
 1.Development/QA environments: EC2 Instance (docker-compose)
 2.Production/Staging: EKS cluster (deployment using Helm)
 
-Cloud: AWS 
+### Cloud Services: 
+AWS - Amazon Web Services
 
-## Automation: 
-We use Jenkins, deployed on Kubernetes. The agents are pods which have containers with the required tools:
+### Automation: 
+We use Jenkins, deployed on Kubernetes. The worker agents are pods which have containers with the required tools:
 
-1. AWS CLI for interacting with AWS, 
-2. Docker for building, tagging and pushing docker images
-2. kubectl for interacting with Kubernetes, 
-3. Helm for deploying to Kubernetes)
-4. Terraform for provisioning infrastructure - IaC (Infrastructure-as-Code)
+1. **AWS CLI** for interacting with AWS, 
+2. **Docker** for building, tagging and pushing docker images
+2. **kubectl** for interacting with Kubernetes, 
+3. **Helm** for deploying to Kubernetes
+4. **Terraform** for provisioning infrastructure - IaC (Infrastructure-as-Code)
 
 ### Present CI/CD Part 1 (Jenkins/Kubectl/Helm - Hello-World)
 Deploy Hello-World application to Kubernetes (kubectl and Helm)
@@ -53,7 +57,7 @@ Deploy Hello-World application to Kubernetes (kubectl and Helm)
 Build, tag and push Docker images
 
 ### Present CI/CD Part 3 (Jenkins/Terraform - Provision Cloud Infrastrcture)
-Build, tag and push Docker images
+Provision resources on AWS using Terraform, which is an IaC technology
 
 ### Present Developer Workflow - Pull Request (changes in the application code)
 Change the code of the 'frontend' micro-service (e.g. main screen's background color), commit, push and create pull request 

@@ -231,7 +231,7 @@ pipeline {
           sh '''
             export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
 
-            NAMESPACE="hello-world"
+            NAMESPACE="hello-world" 
 
             echo ""
             echo "Using Helm to install Hello-World to namespace '$NAMESPACE'"
@@ -415,8 +415,8 @@ pipeline {
       }
       steps {
         script {
-        //   def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot", "tumblr"] 
-          def services = ["chatgpt-telegram-bot"] 
+          def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot", "tumblr"] 
+          // def services = ["chatgpt-telegram-bot"] 
           for (int i = 0; i < services.size(); i++) {
             stage("Build ${services[i]}") {
               container('dind') {
@@ -533,7 +533,7 @@ pipeline {
       }
       steps{
         container('terraform') {
-          withCredentials([sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
+          withCredentials([ sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
                 sh '''
 
                     EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES)  
