@@ -104,9 +104,11 @@ pipeline {
             echo GIT_BRANCH_SHORT: \$GIT_BRANCH_SHORT
           """
 
-          sh "echo GIT_BRANCH_SHORT: ${env.GIT_BRANCH_SHORT}"
+          sh "echo GIT_BRANCH_SHORT: \$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')"
 
-          git branch: "${env.GIT_BRANCH_SHORT}", 
+          // def git_branch = sh "\$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')"
+
+          git branch: "${env.GIT_BRANCH}", 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
