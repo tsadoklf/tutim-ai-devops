@@ -104,7 +104,7 @@ pipeline {
             script {
               GIT_COMMIT_EMAIL = sh (
                     // script: 'git --no-pager show -s --format=\'%ae\'',
-                    script: "echo $env.GIT_BRANCH | sed 's/origin\///'"
+                    script: 'echo $env.GIT_BRANCH | sed "s/origin\///"'
                     returnStdout: true
                 ).trim()
                 echo "Git committer email: ${GIT_COMMIT_EMAIL}"
