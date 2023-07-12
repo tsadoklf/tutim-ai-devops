@@ -91,7 +91,7 @@ pipeline {
       steps {
         container('maven') {
 
-          
+
           git branch: 'main', 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
@@ -101,10 +101,18 @@ pipeline {
             echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
             echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
 
-            
-            echo "env.GIT_BRANCH stripped: ${$(echo $env.GIT_BRANCH | sed 's/origin\///')}"
+            script {
+              GIT_COMMIT_EMAIL = sh (
+                    script: 'git --no-pager show -s --format=\'%ae\'',
+                    returnStdout: true
+                ).trim()
+                echo "Git committer email: ${GIT_COMMIT_EMAIL}"
+            }
 
-            sh "printenv"
+
+            // echo "env.GIT_BRANCH stripped: ${$(echo $env.GIT_BRANCH | sed 's/origin\///')}"
+
+            // sh "printenv"
             // http://aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com/jenkins/env-vars.html/
             
       
