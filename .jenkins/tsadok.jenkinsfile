@@ -104,7 +104,7 @@ pipeline {
             echo GIT_BRANCH_SHORT: \$GIT_BRANCH_SHORT
           """
 
-          sh "echo GIT_BRANCH_SHORT: ${GIT_BRANCH_SHORT}"
+          // sh "echo GIT_BRANCH_SHORT: ${GIT_BRANCH_SHORT}"
 
           git branch: "${GIT_BRANCH_SHORT}", 
             changelog: false, poll: false, 
