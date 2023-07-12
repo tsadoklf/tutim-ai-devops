@@ -90,6 +90,8 @@ pipeline {
     stage('Git: Clone Code') {
       steps {
         container('maven') {
+
+          
           git branch: 'main', 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
@@ -101,6 +103,9 @@ pipeline {
 
             
             echo "env.GIT_BRANCH stripped: ${$(echo $env.GIT_BRANCH | sed 's/origin\///')}"
+
+            sh "printenv"
+            // http://aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com/jenkins/env-vars.html/
             
       
         }
