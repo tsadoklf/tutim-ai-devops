@@ -102,14 +102,14 @@ pipeline {
             echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
             // | sed "s/origin\///"
 
-            script {
+            // script {
               GIT_COMMIT_EMAIL = sh (
                     // script: 'git --no-pager show -s --format=\'%ae\'',
                     script: 'echo $env.GIT_BRANCH'
                     returnStdout: true
                 ).trim()
                 echo "Git committer email: ${GIT_COMMIT_EMAIL}"
-            }
+            // }
 
 
             // echo "env.GIT_BRANCH stripped: ${$(echo $env.GIT_BRANCH | sed 's/origin\///')}"
