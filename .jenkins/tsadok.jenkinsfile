@@ -91,20 +91,24 @@ pipeline {
       steps {
         container('maven') {
 
-
-          git branch: 'main', 
-            changelog: false, poll: false, 
-            credentialsId: 'jenkins',
-            url: "${GITHUB_REPO_URL}"
-
           echo "env.JOB_NAME: ${env.JOB_NAME}"
           echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
           echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
 
           sh """
             echo "env.JOB_NAME: ${env.JOB_NAME}"
-            echo "env.GIT_BRANCH: \$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')"
+            export GIT_BRANCH_SHORT=\$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')"
           """
+
+          sh 'echo GIT_BRANCH_SHORT: $GIT_BRANCH_SHORT'
+
+          git branch: "${GIT_BRANCH_SHORT}", 
+            changelog: false, poll: false, 
+            credentialsId: 'jenkins',
+            url: "${GITHUB_REPO_URL}"
+
+
+
             // | sed "s/origin\///"
 
             // script {
