@@ -91,6 +91,8 @@ pipeline {
       steps {
         container('maven') {
 
+           // http://aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com/jenkins/env-vars.html/
+
           echo "env.JOB_NAME: ${env.JOB_NAME}"
           echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
           echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
@@ -100,38 +102,22 @@ pipeline {
             export GIT_BRANCH_SHORT=\$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')
 
             printenv
-
-            echo GIT_BRANCH_SHORT: \$GIT_BRANCH_SHORT
           """
 
-          sh "echo GIT_BRANCH_SHORT: \$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')"
-
-          // def git_branch = sh "\$(echo ${env.GIT_BRANCH} | sed 's/origin\\///')"
-
-          git branch: "${env.GIT_BRANCH}", 
+          git branch: "dev", 
             changelog: false, poll: false, 
             credentialsId: 'jenkins',
             url: "${GITHUB_REPO_URL}"
 
 
-
-            // | sed "s/origin\///"
-
-            // script {
-              // GIT_COMMIT_EMAIL = sh (
-              //       // script: 'git --no-pager show -s --format=\'%ae\'',
-              //       script: 'echo $env.GIT_BRANCH'
-              //       returnStdout: true
-              //   ).trim()
-              //   echo "Git committer email: ${GIT_COMMIT_EMAIL}"
-            // }
-
-
-            // echo "env.GIT_BRANCH stripped: ${$(echo $env.GIT_BRANCH | sed 's/origin\///')}"
-
-            // sh "printenv"
-            // http://aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com/jenkins/env-vars.html/
-            
+          // script {
+            // GIT_COMMIT_EMAIL = sh (
+            //       // script: 'git --no-pager show -s --format=\'%ae\'',
+            //       script: 'echo $env.GIT_BRANCH'
+            //       returnStdout: true
+            //   ).trim()
+            //   echo "Git committer email: ${GIT_COMMIT_EMAIL}"
+          // }            
       
         }
       }
