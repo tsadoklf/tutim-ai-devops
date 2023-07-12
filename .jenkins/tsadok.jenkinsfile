@@ -102,9 +102,9 @@ pipeline {
           echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
 
           sh '''
-            echo "env.JOB_NAME: ${env.JOB_NAME}"
-            echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
-            echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
+            echo "env.JOB_NAME: \${env.JOB_NAME}"
+            echo "env.BRANCH_NAME: \${env.BRANCH_NAME}" 
+            echo "env.GIT_BRANCH: \${env.GIT_BRANCH}"
           '''
             // | sed "s/origin\///"
 
