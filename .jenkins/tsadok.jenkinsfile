@@ -100,11 +100,12 @@ pipeline {
             echo "env.JOB_NAME: ${env.JOB_NAME}"
             echo "env.BRANCH_NAME: ${env.BRANCH_NAME}" 
             echo "env.GIT_BRANCH: ${env.GIT_BRANCH}"
+            // | sed "s/origin\///"
 
             script {
               GIT_COMMIT_EMAIL = sh (
                     // script: 'git --no-pager show -s --format=\'%ae\'',
-                    script: 'echo $env.GIT_BRANCH | sed "s/origin\///"'
+                    script: 'echo $env.GIT_BRANCH'
                     returnStdout: true
                 ).trim()
                 echo "Git committer email: ${GIT_COMMIT_EMAIL}"
