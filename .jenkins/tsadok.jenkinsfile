@@ -526,11 +526,11 @@ pipeline {
                     //   unzip awscliv2.zip && \
                     //   sudo ./aws/install
     stage ("SSH: Deploy Code to EC2 Inatance"){
-      when {      
-          expression {
-              return env.JOB_NAME == 'tutim-ai-dev';
-          }
-      }
+      // when {      
+      //     expression {
+      //         return env.JOB_NAME == 'tutim-ai-dev';
+      //     }
+      // }
       steps{
         container('terraform') {
           withCredentials([ sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
