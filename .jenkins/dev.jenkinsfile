@@ -220,7 +220,7 @@ pipeline {
       }
       steps {
         script {
-          // "polybot", "tunblr"
+          // "polybot", "tumblr"
           def services = ["frontend", "yolo5", "chatgpt-telegram-bot"] 
           for (int i = 0; i < services.size(); i++) {
             stage("Build ${services[i]}") {
@@ -233,130 +233,167 @@ pipeline {
       }
     }
 
-    stage('EKS: Deploy App to EKS using Helm') {
-      when {      
-          expression {
-              return env.JOB_NAME == 'tutim-ai-main';
-          }
-      }
-      steps {
-        container('aws') {
-          sh '''
-            #!/bin/bash
-            set +x
-
-            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
-
-            echo BRANCH_NAME: ${BRANCH_NAME}
-
-            if [ "$BRANCH_NAME" == "main" ]; then
-                NAMESPACE="app-production"
-                FRONTEND_ENDPOINT="ai-frontend"
-                FRONTEND_REPLICAS=3
-            else
-                NAMESPACE="app-staging"
-                FRONTEND_ENDPOINT="ai-frontend-staging"
-                FRONTEND_REPLICAS=1
-            fi
-
-            NAMESPACE="app-production"
-            FRONTEND_ENDPOINT="ai-frontend"
-            FRONTEND_REPLICAS=3
-
-            case "$JOB_NAME" in 
-              'tutim-ai-main')
-                export TELEGRAM_BOT_TOKEN="6366730524:AAEjl6gBVjMT_ud_AIY5aq0HWw5a8j9A4DA"
-                ;;
-              'tutim-ai-dev')
-                export TELEGRAM_BOT_TOKEN="6338327189:AAG33JNgkI8NjSXaKcC4S7-TV0R3fNj1hho"
-                ;;
-              *)
-                echo "Unknown JOB_NAME: ${env.JOB_NAME}"
-                exit 1
-                ;;
-            esac
-
-            SECRET_NAME="ecr-credentials"
-            DOCKER_USERNAME="AWS"            
-            kubectl create secret docker-registry $SECRET_NAME \
-                --docker-server=$REGISTRY \
-                --docker-username="AWS" \
-                --docker-password="$(cat $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE)" \
-                --namespace=$NAMESPACE || true
-
-            set -x
-
-            RELEASE_NAME="upes-ai-bot"
-            CHART_NAME="upes-ai-bot"
-            CHART_REPO="./helm/upes-ai-bot"
-            
-            echo ""
-            echo "Installing '$CHART_NAME' in namespace '$NAMESPACE' using helm"
-            echo "-----------------------------------------------------------"
-            helm upgrade $CHART_NAME $CHART_REPO \
-                --install \
-                --create-namespace \
-                --namespace $NAMESPACE \
-                --kubeconfig $KUBECONFIG \
-                --set ingress.hosts[0].host=$HOST_NAME \
-                --set ingress.hosts[0].paths[0].path="/frontend/(.*)" \
-                --set ingress.hosts[0].paths[0].pathType=Prefix \
-                --set ingress.hosts[0].paths[0].backend.service.name=frontend \
-                --set ingress.hosts[0].paths[0].backend.service.port.number=80 \
-                --set services.frontend.replicas.min=$FRONTEND_REPLICAS \
-                --set services.frontend.replicas.max=$FRONTEND_REPLICAS \
-                --set services.backend.replicas.min=1 \
-                --set services.backend.replicas.max=1 \
-                --set providerCredentials.telegramBotToken=$TELEGRAM_BOT_TOKEN 
-  
-            echo ""
-            kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
-          '''
+    stage('Terraform: Create Dev Infrastructure') {
+        when {      
+            expression {
+                return env.BRANCH_NAME != 'main';
+            }
         }
-      }
+        steps {
+            container('terraform') {
+                dir(path: "terraform") {
+                    sh '''
+
+                    echo ""
+                    terraform version
+
+                    echo ""
+                    echo "Initializing Terraform (backend: S3)"
+                    terraform init -backend-config=backend.hcl
+
+                    echo ""
+                    echo "Validating Terraform"
+                    terraform validate
+
+                    echo ""
+                    echo "Planning Terraform"
+                    terraform plan -out=tfplan
+
+                    echo ""
+                    echo "Applying Terraform"
+                    terraform apply -auto-approve tfplan
+
+                    echo ""
+                    echo "Showing Terraform state"
+                    terraform show
+
+                    echo ""
+                    echo "Getting instance ID"  
+                    terraform output "instance_id" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
+                    cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS
+
+
+                    echo ""
+                    echo "Getting instance public IP"  
+                    terraform output "instance_public_ip" | xargs > $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+                    cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES
+
+
+
+                    echo ""
+                    echo "Done creating infrastructure with Terraform"
+
+                    '''
+                }
+            }
+        }
     }
 
-    stage('EKS: Restart frontend pods') {
-      when {      
-          expression {
-              return env.JOB_NAME == 'tutim-ai-main';
+// "running"
+    stage('AWS: Make sure EC2 instance is up') {
+        when {      
+            expression {
+                return env.BRANCH_NAME != 'master';
+            }
+        }
+        steps {
+            container('aws') {
+                sh '''
+                    echo "Retrieving EC2 instance IDs from shared data volume ..."
+                    INSTANCE_IDS=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_IDS)
+                    INSTANCE_REGION="us-east-2"
+
+                    echo "Restarting EC2 instances ..."
+                    aws ec2 start-instances --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS
+
+                    echo ""
+                    echo "Checking EC2 instance status ..."
+                    aws ec2 describe-instance-status \
+                    --query "InstanceStatuses[0].InstanceState.Name" \
+                    --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs
+
+                    echo ""
+                    
+                    until [[ "$(aws ec2 describe-instance-status \
+                        --query "InstanceStatuses[0].InstanceState.Name" \
+                        --region $INSTANCE_REGION --instance-ids $INSTANCE_IDS | xargs)" = "running" ]] ; 
+                    do
+                        echo "Waiting for EC2 instance to be up ..."
+                        sleep 1
+                    done 
+            '''
+            }
+        }
+    }
+                //   aws ec2 wait instance-status-ok --instance-ids $INSTANCE_IDS
+
+                    //   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+                    //   unzip awscliv2.zip && \
+                    //   sudo ./aws/install
+    stage ("SSH: Deploy Code to EC2 Inatance"){
+      // when {      
+      //     expression {
+      //         return env.JOB_NAME == 'tutim-ai-dev';
+      //     }
+      // }
+      steps{
+        container('terraform') {
+          withCredentials([ sshUserPrivateKey(credentialsId: "aws-ec2-keypair", keyFileVariable: 'CREDENTIALS_FILE')]) {
+                sh '''
+
+                    EC2_INSTANCE_PUBLIC_IP=$(cat $SHARED_DATA_PATH/$EC2_INSTANCES_PUBLIC_IP_ADDRESSES)  
+                    EC2_ADMIN_USERNAME="ubuntu"
+                    EC2_ADDRESS="${EC2_ADMIN_USERNAME}@${EC2_INSTANCE_PUBLIC_IP}"
+
+                    ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
+                        mkdir -p /home/ubuntu/test
+                        ls -l
+                    """
+
+                    echo ""
+                    echo "Copying docker-compose.yaml to EC2 instance"
+                    scp -r -i ${CREDENTIALS_FILE} object-detection/docker-compose.yaml ${EC2_ADDRESS}:/home/ubuntu/test/docker-compose.yaml
+
+                    echo ""
+                    echo "Copying aws-ecr-token to EC2 instance"
+                    scp -r -i ${CREDENTIALS_FILE} $SHARED_DATA_PATH/$AWS_ECR_TOKEN_FILE ${EC2_ADDRESS}:/home/ubuntu/test/$AWS_ECR_TOKEN_FILE
+
+                    echo ""
+                    echo "Running docker-compose.yaml on EC2 instance"
+                    ssh -o StrictHostKeyChecking=no -i ${CREDENTIALS_FILE} ${EC2_ADDRESS} """
+
+                    echo ""
+                    echo "Checking if Docker is installed"
+                     if docker version 2>/dev/null | grep -q Version; then
+                        echo "Docker is installed"
+                    else
+                        echo "Installing Docker ..."
+                        sudo apt update
+                        sudo apt -y install docker.io 
+                        sudo apt -y install docker-compose
+                        sudo apt -y install curl unzip 
+                    fi
+         
+                    echo "" 
+                    until sudo docker version &> /dev/null; do
+                        echo "Waiting for Docker daemon to be up ..."
+                        sleep 1
+                    done
+                    echo "Docker daemon is up!"
+
+                    cat test/$AWS_ECR_TOKEN_FILE | sudo docker login --password-stdin --username $DOCKER_USERNAME $REGISTRY 
+
+                    sudo docker-compose -f test/docker-compose.yaml pull
+                    sudo docker-compose -f test/docker-compose.yaml up -d --remove-orphans
+                    sudo docker-compose -f test/docker-compose.yaml ps
+                    sudo docker image prune --force --all
+                    """
+                '''
+
           }
-      }
-      steps {
-        container('aws') {
-          sh '''
-            #!/bin/bash
-            set +x
-
-            export KUBECONFIG="$SHARED_DATA_PATH/kubeconfig"
-
-            echo BRANCH_NAME: ${BRANCH_NAME}
-
-            if [ "$BRANCH_NAME" == "main" ]; then
-                NAMESPACE="app-production"
-
-            else
-                NAMESPACE="app-staging"
-            fi
-
-            NAMESPACE="app-production"
-            FRONTEND_ENDPOINT="ai-frontend"
-            FRONTEND_REPLICAS=3
-
-            echo ""
-            kubectl get all -n $NAMESPACE --kubeconfig $KUBECONFIG
-
-            DEPLOYMENT="frontend"
-            for pod in $(kubectl get pods -n $NAMESPACE --kubeconfig $KUBECONFIG | grep $DEPLOYMENT  | awk '{print $1}'); do 
-              kubectl delete pod $pod -n $NAMESPACE --kubeconfig $KUBECONFIG; 
-            done
-
-            kubectl get pods -n $NAMESPACE --kubeconfig $KUBECONFIG
-          '''
         }
       }
-    }
-
+    }  
   }
   post {
     always {
