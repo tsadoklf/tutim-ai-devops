@@ -50,6 +50,9 @@ We use Jenkins, deployed on Kubernetes. The worker agents are pods which have co
 3. **Helm** for deploying to Kubernetes
 4. **Terraform** for provisioning infrastructure - IaC (Infrastructure-as-Code)
 
+### Present Docker Container Usage
+Use a container 
+
 ### Present CI/CD Part 1 (Jenkins/Kubectl/Helm - Hello-World)
 Deploy Hello-World application to Kubernetes (kubectl and Helm)
 
@@ -68,5 +71,32 @@ Change the code of the Jenkins' pipeline (in Jenkinsfile)
 ### Present DevOps Workflow - Pull Request (changes in the infrastructure's code - IaC)
 Change the code of one of the Terraform resource and apply to show the effect (e.g. change fromPort and toPort in a security group)
 
-### 
+### Links
+Frontend (production, kubernetes)
+http://aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com/
+
+Frontend (dev, ec2 instance)
+http://52.14.144.19:8082/
+
+Telegram (production bot)
+https://web.telegram.org/k/#@tutim_ai_bot
+
+Telegram (dev bot)
+https://web.telegram.org/k/#@tutim_ai_dev_bot
+
+
+Jenkins
+http://aada482ae939d430180f1feba4d11f49-899972468.us-west-2.elb.amazonaws.com/jenkins
+
+GitHub repositories
+
+#### tutim-ai-app
+https://github.com/tsadoklf/tutim-ai-app
+
+#### tutim-ai-devops
+https://github.com/tsadoklf/tutim-ai-devops
+
+
+
+
 
