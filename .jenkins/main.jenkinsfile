@@ -220,7 +220,8 @@ pipeline {
       }
       steps {
         script {
-          def services = ["frontend", "polybot", "yolo5", "chatgpt-telegram-bot"] 
+          // "polybot", "tumblr"
+          def services = ["frontend", "yolo5", "chatgpt-telegram-bot"] 
           for (int i = 0; i < services.size(); i++) {
             stage("Build ${services[i]}") {
               container('dind') {
