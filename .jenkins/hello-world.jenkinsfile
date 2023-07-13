@@ -260,21 +260,7 @@ pipeline {
         }
       }
     }
-    stage('Docker: Check Daemon Is Up') {
-        steps {
-            container('dind') {
-                sh '''
-                    echo "Waiting for Docker daemon to be up ..."
-
-                    # Check if Docker daemon is running
-                    until docker version &> /dev/null; do
-                        sleep 1
-                    done
-                    echo "Docker daemon is up!"
-                '''
-            }
-        }
-    }
+  }
   post {
     always {
         container('dind') {
